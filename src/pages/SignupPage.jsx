@@ -21,17 +21,27 @@ const SignupPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true);
-        // Mock signup delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        signup({
+        if (formData.password !== formData.confirmPassword) {
+            alert("Passwords do not match!");
+            return;
+        }
+
+        setIsLoading(true);
+
+        const result = await signup({
             name: formData.name,
-            email: formData.email
+            email: formData.email,
+            password: formData.password
         });
 
+        if (result.success) {
+            navigate('/'); // Navigate to home after signup (auto-login)
+        } else {
+            alert("Signup failed: " + result.error);
+        }
+
         setIsLoading(false);
-        navigate('/'); // Navigate to home after signup (auto-login)
     };
 
     return (

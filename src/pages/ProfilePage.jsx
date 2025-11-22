@@ -11,9 +11,9 @@ const ProfilePage = () => {
     // Initialize state with user data or defaults
     const [profile, setProfile] = useState({
         name: '',
-        category: '',
-        subCategory: '',
-        role: '',
+        categories: [],      // Changed from category to categories array
+        subCategories: [],   // Changed from subCategory to subCategories array
+        roles: [],           // Changed from role to roles array
         region: '',
         techStack: [],
         interests: [],
@@ -34,13 +34,13 @@ const ProfilePage = () => {
         if (user) {
             setProfile({
                 name: user.name || '',
-                category: user.category || '',
-                subCategory: user.subCategory || '',
-                role: user.role || '',
+                categories: user.categories || [],
+                subCategories: user.subCategories || [],
+                roles: user.roles || [],
                 region: user.region || '',
-                techStack: user.techStack || ['React', 'Node.js', 'TypeScript'],
-                interests: user.interests || ['Hackathons', 'Open Source', 'AI'],
-                availableTime: user.availableTime || 'Weekends, Evenings',
+                techStack: user.techStack || [],
+                interests: user.interests || [],
+                availableTime: user.availableTime || '',
                 bio: user.bio || '',
                 school: user.school || '',
                 awards: user.awards || []
@@ -58,13 +58,13 @@ const ProfilePage = () => {
         if (user) {
             setProfile({
                 name: user.name || '',
-                category: user.category || '',
-                subCategory: user.subCategory || '',
-                role: user.role || '',
+                categories: user.categories || [],
+                subCategories: user.subCategories || [],
+                roles: user.roles || [],
                 region: user.region || '',
-                techStack: user.techStack || ['React', 'Node.js', 'TypeScript'],
-                interests: user.interests || ['Hackathons', 'Open Source', 'AI'],
-                availableTime: user.availableTime || 'Weekends, Evenings',
+                techStack: user.techStack || [],
+                interests: user.interests || [],
+                availableTime: user.availableTime || '',
                 bio: user.bio || '',
                 school: user.school || '',
                 awards: user.awards || []
@@ -88,18 +88,59 @@ const ProfilePage = () => {
         }));
     };
 
-    const handleCategoryChange = (e) => {
-        const selectedCategory = e.target.value;
+    const handleAddCategory = (categoryName) => {
+        if (!categoryName || profile.categories.includes(categoryName)) return;
         setProfile(prev => ({
             ...prev,
-            category: selectedCategory,
-            subCategory: '', // Reset sub-category
-            role: '' // Reset role
+            categories: [...prev.categories, categoryName]
         }));
     };
 
-    // Get current category object to populate sub-dropdowns
-    const currentCategoryObj = jobCategories.find(c => c.name === profile.category);
+    const handleRemoveCategory = (categoryName) => {
+        setProfile(prev => ({
+            ...prev,
+            categories: prev.categories.filter(c => c !== categoryName),
+            // Also remove related subcategories and roles
+            subCategories: prev.subCategories.filter(sc => {
+                const cat = jobCategories.find(jc => jc.name === categoryName);
+                return !cat || !cat.subFields.includes(sc);
+            }),
+            roles: prev.roles.filter(r => {
+                const cat = jobCategories.find(jc => jc.name === categoryName);
+                return !cat || !cat.roles.includes(r);
+            })
+        }));
+    };
+
+    const handleAddSubCategory = (subCategoryName) => {
+        if (!subCategoryName || profile.subCategories.includes(subCategoryName)) return;
+        setProfile(prev => ({
+            ...prev,
+            subCategories: [...prev.subCategories, subCategoryName]
+        }));
+    };
+
+    const handleRemoveSubCategory = (subCategoryName) => {
+        setProfile(prev => ({
+            ...prev,
+            subCategories: prev.subCategories.filter(sc => sc !== subCategoryName)
+        }));
+    };
+
+    const handleAddRole = (roleName) => {
+        if (!roleName || profile.roles.includes(roleName)) return;
+        setProfile(prev => ({
+            ...prev,
+            roles: [...prev.roles, roleName]
+        }));
+    };
+
+    const handleRemoveRole = (roleName) => {
+        setProfile(prev => ({
+            ...prev,
+            roles: prev.roles.filter(r => r !== roleName)
+        }));
+    };
 
     if (!user) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -121,14 +162,13 @@ const ProfilePage = () => {
                                 />
                                 <div className="ml-6 mb-2">
                                     <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
-                                    <div className="flex items-center text-gray-600 text-sm mt-1">
-                                        <span>{profile.category}</span>
-                                        {profile.role && (
-                                            <>
-                                                <ChevronRight className="w-4 h-4 mx-1" />
-                                                <span>{profile.role}</span>
-                                            </>
-                                        )}
+                                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                                        {profile.categories.map((cat) => (
+                                            <span key={cat} className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">{cat}</span>
+                                        ))}
+                                        {profile.roles.map((role) => (
+                                            <span key={role} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">{role}</span>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -183,48 +223,104 @@ const ProfilePage = () => {
                                                 />
                                             </div>
 
-                                            {/* Category Selection */}
-                                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                            {/* Category, Sub-field, Role Multi-Select */}
+                                            <div className="md:col-span-2 space-y-4 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                                {/* Categories */}
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Categories (선택 가능)</label>
                                                     <select
-                                                        value={profile.category}
-                                                        onChange={handleCategoryChange}
-                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                                                        onChange={(e) => {
+                                                            handleAddCategory(e.target.value);
+                                                            e.target.value = '';
+                                                        }}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white mb-2"
                                                     >
-                                                        <option value="">Select Category</option>
+                                                        <option value="">Add Category...</option>
                                                         {jobCategories.map(cat => (
                                                             <option key={cat.id} value={cat.name}>{cat.name}</option>
                                                         ))}
                                                     </select>
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Sub-field</label>
-                                                    <select
-                                                        value={profile.subCategory}
-                                                        onChange={(e) => setProfile({ ...profile, subCategory: e.target.value })}
-                                                        disabled={!profile.category}
-                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white disabled:bg-gray-100 disabled:text-gray-400"
-                                                    >
-                                                        <option value="">Select Sub-field</option>
-                                                        {currentCategoryObj?.subFields.map((sub, idx) => (
-                                                            <option key={idx} value={sub}>{sub}</option>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {profile.categories.map((cat) => (
+                                                            <span key={cat} className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm">
+                                                                {cat}
+                                                                <button
+                                                                    onClick={() => handleRemoveCategory(cat)}
+                                                                    className="hover:bg-indigo-200 rounded-full p-0.5"
+                                                                >
+                                                                    <X className="w-3 h-3" />
+                                                                </button>
+                                                            </span>
                                                         ))}
-                                                    </select>
+                                                    </div>
                                                 </div>
+
+                                                {/* Sub-fields */}
                                                 <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Sub-fields (분야별 선택 가능)</label>
                                                     <select
-                                                        value={profile.role}
-                                                        onChange={(e) => setProfile({ ...profile, role: e.target.value })}
-                                                        disabled={!profile.category}
-                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white disabled:bg-gray-100 disabled:text-gray-400"
+                                                        onChange={(e) => {
+                                                            handleAddSubCategory(e.target.value);
+                                                            e.target.value = '';
+                                                        }}
+                                                        disabled={profile.categories.length === 0}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white disabled:bg-gray-100 disabled:text-gray-400 mb-2"
                                                     >
-                                                        <option value="">Select Role</option>
-                                                        {currentCategoryObj?.roles.map((role, idx) => (
-                                                            <option key={idx} value={role}>{role}</option>
-                                                        ))}
+                                                        <option value="">Add Sub-field...</option>
+                                                        {profile.categories.flatMap(catName => {
+                                                            const cat = jobCategories.find(jc => jc.name === catName);
+                                                            return cat?.subFields.map(sub => (
+                                                                <option key={`${catName}-${sub}`} value={sub}>{sub} ({catName})</option>
+                                                            )) || [];
+                                                        })}
                                                     </select>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {profile.subCategories.map((sub) => (
+                                                            <span key={sub} className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                                                                {sub}
+                                                                <button
+                                                                    onClick={() => handleRemoveSubCategory(sub)}
+                                                                    className="hover:bg-purple-200 rounded-full p-0.5"
+                                                                >
+                                                                    <X className="w-3 h-3" />
+                                                                </button>
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Roles */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Roles (역할별 선택 가능)</label>
+                                                    <select
+                                                        onChange={(e) => {
+                                                            handleAddRole(e.target.value);
+                                                            e.target.value = '';
+                                                        }}
+                                                        disabled={profile.categories.length === 0}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white disabled:bg-gray-100 disabled:text-gray-400 mb-2"
+                                                    >
+                                                        <option value="">Add Role...</option>
+                                                        {profile.categories.flatMap(catName => {
+                                                            const cat = jobCategories.find(jc => jc.name === catName);
+                                                            return cat?.roles.map(role => (
+                                                                <option key={`${catName}-${role}`} value={role}>{role} ({catName})</option>
+                                                            )) || [];
+                                                        })}
+                                                    </select>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {profile.roles.map((role) => (
+                                                            <span key={role} className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                                                                {role}
+                                                                <button
+                                                                    onClick={() => handleRemoveRole(role)}
+                                                                    className="hover:bg-green-200 rounded-full p-0.5"
+                                                                >
+                                                                    <X className="w-3 h-3" />
+                                                                </button>
+                                                            </span>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
 

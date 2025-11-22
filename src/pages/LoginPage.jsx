@@ -14,13 +14,16 @@ const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Mock login delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        login({ email }); // Call login from context
+        const result = await login(email, password);
+
+        if (result.success) {
+            navigate('/');
+        } else {
+            alert("Login failed: " + result.error);
+        }
 
         setIsLoading(false);
-        navigate('/');
     };
 
     return (
