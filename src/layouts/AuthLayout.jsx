@@ -8,7 +8,7 @@ const AuthLayout = () => {
             <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
                 <Link to="/" className="flex justify-center items-center gap-2 text-3xl font-extrabold text-indigo-600 tracking-tight">
                     <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
-                        TeamMatch
+                        MeetGoing
                     </span>
                 </Link>
 

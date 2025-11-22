@@ -57,7 +57,14 @@ export function calculateSuitability(userA, userB) {
     }
 
     // 4. Total Score (0 - 100)
-    return Math.round(scoreCategory + scoreSub + scoreTech);
+    let totalScore = Math.round(scoreCategory + scoreSub + scoreTech);
+
+    // 5. Region Penalty (30% reduction if regions don't match)
+    if (userA.region && userB.region && userA.region !== userB.region) {
+        totalScore = Math.round(totalScore * 0.7);
+    }
+
+    return totalScore;
 }
 
 /**
@@ -71,11 +78,6 @@ export function findBestMatch(targetUser, allUsers) {
 
     const results = allUsers
         .filter(user => user.id !== targetUser.id) // Exclude self
-        .filter(user => {
-            // Filter by Same Main Category
-            const userCats = getList(user.category || user.categories);
-            return targetCats.some(c => userCats.includes(c));
-        })
         .map(user => {
             const score = calculateSuitability(targetUser, user);
             return {

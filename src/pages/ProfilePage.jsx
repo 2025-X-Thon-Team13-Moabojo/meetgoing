@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, MapPin, Briefcase, Code, Clock, Save, X, GraduationCap, Award, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { jobCategories } from '../data/jobCategories';
+import { REGIONS } from '../utils/domainData';
 
 const ProfilePage = () => {
     const { user, updateProfile, isLoading } = useAuth();
@@ -338,11 +339,11 @@ const ProfilePage = () => {
                                                     onChange={(e) => setProfile({ ...profile, school: e.target.value })}
                                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent mb-4"
                                                 >
-                                                    <option value="">Select School Level</option>
-                                                    <option value="Elementary School">Elementary School</option>
-                                                    <option value="Middle School">Middle School</option>
-                                                    <option value="High School">High School</option>
-                                                    <option value="University">University</option>
+                                                    <option value="">학교를 선택하세요</option>
+                                                    <option value="Elementary School">초등학교</option>
+                                                    <option value="Middle School">중학교</option>
+                                                    <option value="High School">고등학교</option>
+                                                    <option value="University">대학교</option>
                                                 </select>
 
                                                 {profile.school === 'University' && (
@@ -360,12 +361,18 @@ const ProfilePage = () => {
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
-                                                <input
-                                                    type="text"
+                                                <select
                                                     value={profile.region}
                                                     onChange={(e) => setProfile({ ...profile, region: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                />
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent mb-4"
+                                                >
+                                                    <option value="">지역을 선택하세요</option>
+                                                    {REGIONS.map(region => (
+                                                        <option key={region.value} value={region.value}>
+                                                            {region.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">Available Time</label>

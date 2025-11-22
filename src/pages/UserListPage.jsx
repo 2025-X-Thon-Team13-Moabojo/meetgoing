@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter } from 'lucide-react';
 import UserCard from '../components/features/UserCard';
 import { db } from '../firebase';
@@ -7,15 +8,25 @@ import { jobCategories } from '../data/jobCategories';
 import { useAuth } from '../context/AuthContext';
 
 const UserListPage = () => {
-    const { user: currentUser } = useAuth();
+    const { user: currentUser, isLoading } = useAuth();
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedTech, setSelectedTech] = useState('');
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // 0. Priority: Check Authentication
+    useEffect(() => {
+        if (!isLoading && !currentUser) {
+            navigate('/login');
+        }
+    }, [currentUser, isLoading, navigate]);
+
     // Fetch users from Firebase
     useEffect(() => {
+        if (!currentUser) return; // Don't fetch if not logged in
+
         const fetchUsers = async () => {
             try {
                 const querySnapshot = await getDocs(collection(db, 'users'));
@@ -63,14 +74,31 @@ const UserListPage = () => {
             (user.bio && user.bio.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (user.roles && user.roles.some(role => role.toLowerCase().includes(searchTerm.toLowerCase())));
 
-        const matchesCategory = selectedCategory ?
-            (user.categories && user.categories.includes(selectedCategory)) : true;
+        // Logic:
+        // 1. If selectedCategory is set -> Show users in that category.
+        // 2. If selectedCategory is NOT set -> Show users in MY category (default).
+        let matchesCategory = true;
+        if (selectedCategory) {
+            matchesCategory = user.categories && user.categories.includes(selectedCategory);
+        } else {
+            // Default: Show users in my category
+            if (currentUser && (currentUser.categories || currentUser.category)) {
+                const myCats = currentUser.categories || [currentUser.category];
+                const userCats = user.categories || [user.category];
+                matchesCategory = myCats.some(c => userCats.includes(c));
+            }
+        }
 
         const matchesTech = selectedTech ?
             (user.techStack && user.techStack.includes(selectedTech)) : true;
 
         return matchesSearch && matchesCategory && matchesTech;
     });
+
+
+
+    if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    if (!currentUser) return null;
 
     return (
         <div className="min-h-screen bg-gray-50 py-12">

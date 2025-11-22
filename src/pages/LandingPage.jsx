@@ -28,7 +28,7 @@ const LandingPage = () => {
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-6">
-                        공모전으로 <span className="text-indigo-600">팀을 찾아보세요</span>
+                        뜻을 함께할 <span className="text-indigo-600">동료들을 찾아보세요</span>
                     </h1>
                     <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-600 mb-8">
                         8개의 진행 중인 공모전에서 완벽한 팀원을 만나세요
@@ -70,8 +70,10 @@ const LandingPage = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+
                         {contests.slice(0, 3).map(contest => (
                             <ContestCard key={contest.id} contest={contest} />
+
                         ))}
                     </div>
 
