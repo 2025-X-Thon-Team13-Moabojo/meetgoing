@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { User, MapPin, Briefcase, Code, Clock, Save, X, GraduationCap, Award, Plus, Trash2 } from 'lucide-react';
+import { User, MapPin, Briefcase, Code, Clock, Save, X, GraduationCap, Award, Plus, Trash2, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { jobCategories } from '../data/jobCategories';
 
 const ProfilePage = () => {
     const { user, updateProfile } = useAuth();
@@ -10,6 +11,8 @@ const ProfilePage = () => {
     // Initialize state with user data or defaults
     const [profile, setProfile] = useState({
         name: '',
+        category: '',
+        subCategory: '',
         role: '',
         region: '',
         techStack: [],
@@ -20,11 +23,19 @@ const ProfilePage = () => {
         awards: []
     });
 
+    const [inputs, setInputs] = useState({
+        techStack: '',
+        interests: '',
+        awards: ''
+    });
+
     // Update local state when user context changes
     useEffect(() => {
         if (user) {
             setProfile({
                 name: user.name || '',
+                category: user.category || '',
+                subCategory: user.subCategory || '',
                 role: user.role || '',
                 region: user.region || '',
                 techStack: user.techStack || ['React', 'Node.js', 'TypeScript'],
@@ -47,6 +58,8 @@ const ProfilePage = () => {
         if (user) {
             setProfile({
                 name: user.name || '',
+                category: user.category || '',
+                subCategory: user.subCategory || '',
                 role: user.role || '',
                 region: user.region || '',
                 techStack: user.techStack || ['React', 'Node.js', 'TypeScript'],
@@ -75,11 +88,18 @@ const ProfilePage = () => {
         }));
     };
 
-    const [inputs, setInputs] = useState({
-        techStack: '',
-        interests: '',
-        awards: ''
-    });
+    const handleCategoryChange = (e) => {
+        const selectedCategory = e.target.value;
+        setProfile(prev => ({
+            ...prev,
+            category: selectedCategory,
+            subCategory: '', // Reset sub-category
+            role: '' // Reset role
+        }));
+    };
+
+    // Get current category object to populate sub-dropdowns
+    const currentCategoryObj = jobCategories.find(c => c.name === profile.category);
 
     if (!user) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -101,7 +121,15 @@ const ProfilePage = () => {
                                 />
                                 <div className="ml-6 mb-2">
                                     <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
-                                    <p className="text-gray-600">{profile.role}</p>
+                                    <div className="flex items-center text-gray-600 text-sm mt-1">
+                                        <span>{profile.category}</span>
+                                        {profile.role && (
+                                            <>
+                                                <ChevronRight className="w-4 h-4 mx-1" />
+                                                <span>{profile.role}</span>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             {!isEditing && (
@@ -121,9 +149,7 @@ const ProfilePage = () => {
                                     {['basic', 'skills', 'achievements'].map((tab) => (
                                         <button
                                             key={tab}
-                                            onClick={() => {
-                                                setActiveTab(tab);
-                                            }}
+                                            onClick={() => setActiveTab(tab)}
                                             className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === tab
                                                 ? 'bg-white text-indigo-600 shadow-sm'
                                                 : 'text-gray-500 hover:text-gray-700'
@@ -156,15 +182,52 @@ const ProfilePage = () => {
                                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                                 />
                                             </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                                                <input
-                                                    type="text"
-                                                    value={profile.role}
-                                                    onChange={(e) => setProfile({ ...profile, role: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                />
+
+                                            {/* Category Selection */}
+                                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                                    <select
+                                                        value={profile.category}
+                                                        onChange={handleCategoryChange}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                                                    >
+                                                        <option value="">Select Category</option>
+                                                        {jobCategories.map(cat => (
+                                                            <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Sub-field</label>
+                                                    <select
+                                                        value={profile.subCategory}
+                                                        onChange={(e) => setProfile({ ...profile, subCategory: e.target.value })}
+                                                        disabled={!profile.category}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white disabled:bg-gray-100 disabled:text-gray-400"
+                                                    >
+                                                        <option value="">Select Sub-field</option>
+                                                        {currentCategoryObj?.subFields.map((sub, idx) => (
+                                                            <option key={idx} value={sub}>{sub}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                                                    <select
+                                                        value={profile.role}
+                                                        onChange={(e) => setProfile({ ...profile, role: e.target.value })}
+                                                        disabled={!profile.category}
+                                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white disabled:bg-gray-100 disabled:text-gray-400"
+                                                    >
+                                                        <option value="">Select Role</option>
+                                                        {currentCategoryObj?.roles.map((role, idx) => (
+                                                            <option key={idx} value={role}>{role}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
                                             </div>
+
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">School / University</label>
                                                 <input
@@ -412,17 +475,18 @@ const ProfilePage = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-start">
+                                                <Briefcase className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-900">Role & Field</p>
+                                                    <p className="text-sm text-gray-600">{profile.role}</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">{profile.subCategory}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-start">
                                                 <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                                                 <div>
                                                     <p className="text-sm font-medium text-gray-900">Location</p>
                                                     <p className="text-sm text-gray-600">{profile.region}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start">
-                                                <Briefcase className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-900">Role</p>
-                                                    <p className="text-sm text-gray-600">{profile.role}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start">

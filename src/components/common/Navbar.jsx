@@ -39,6 +39,13 @@ const Navbar = () => {
                                 Find Team
                             </Link>
                             <Link
+                                to="/users"
+                                className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/users') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
+                                    }`}
+                            >
+                                Find Teammates
+                            </Link>
+                            <Link
                                 to="/contests"
                                 className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/contests') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
                                     }`}

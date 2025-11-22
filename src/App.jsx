@@ -10,35 +10,38 @@ import ContestDetailPage from './pages/ContestDetailPage';
 import TeamListPage from './pages/TeamListPage';
 import CreateTeamPage from './pages/CreateTeamPage';
 import ChatPage from './pages/ChatPage';
+import UserListPage from './pages/UserListPage';
+import MatchesPage from './pages/MatchesPage';
 
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
-  const location = useLocation();
-  const isAuthPage = ['/login', '/signup'].includes(location.pathname);
-
   return (
-    <AuthProvider>
-      <Routes>
-        {/* Main Layout Routes */}
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/contests" element={<ContestListPage />} />
-          <Route path="/contests/:id" element={<ContestDetailPage />} />
-          <Route path="/teams" element={<TeamListPage />} />
-          <Route path="/teams/new" element={<CreateTeamPage />} />
-          <Route path="/chat" element={<ChatPage />} />
-        </Route>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          {/* Auth Routes */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+          </Route>
 
-        {/* Auth Routes */}
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-        </Route>
-      </Routes>
-    </AuthProvider>
+          {/* Main Layout Routes */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/contests" element={<ContestListPage />} />
+            <Route path="/contests/:id" element={<ContestDetailPage />} />
+            <Route path="/teams" element={<TeamListPage />} />
+            <Route path="/teams/new" element={<CreateTeamPage />} />
+            <Route path="/users" element={<UserListPage />} />
+            <Route path="/matches" element={<MatchesPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
