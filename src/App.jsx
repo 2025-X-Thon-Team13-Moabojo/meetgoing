@@ -18,30 +18,28 @@ import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          {/* Auth Routes */}
-          <Route element={<AuthLayout />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-          </Route>
+    <AuthProvider>
+      <Routes>
+        {/* Auth Routes */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+        </Route>
 
-          {/* Main Layout Routes */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/contests" element={<ContestListPage />} />
-            <Route path="/contests/:id" element={<ContestDetailPage />} />
-            <Route path="/teams" element={<TeamListPage />} />
-            <Route path="/teams/new" element={<CreateTeamPage />} />
-            <Route path="/users" element={<UserListPage />} />
-            <Route path="/matches" element={<MatchesPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-          </Route>
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+        {/* Main Layout Routes */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/contests" element={<ContestListPage />} />
+          <Route path="/contests/:id" element={<ContestDetailPage />} />
+          <Route path="/teams" element={<TeamListPage />} />
+          <Route path="/teams/new" element={<CreateTeamPage />} />
+          <Route path="/users" element={<UserListPage />} />
+          <Route path="/matches" element={<MatchesPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 }
 
