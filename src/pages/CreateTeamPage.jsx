@@ -95,7 +95,7 @@ const CreateTeamPage = () => {
             await addDoc(collection(db, 'teams'), teamData);
 
             alert('팀이 성공적으로 생성되었습니다!');
-            navigate('/users'); // Navigate to Find Teammates page
+            navigate('/teams'); // Navigate to Team List page
         } catch (error) {
             console.error('Error creating team:', error);
             alert('팀 생성에 실패했습니다: ' + error.message);

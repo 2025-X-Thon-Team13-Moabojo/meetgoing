@@ -1,7 +1,45 @@
-import React from 'react';
-import { Users, MapPin, Code, Briefcase } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, MapPin, Code, Briefcase, MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { getOrCreateConversation } from '../../utils/messageService';
 
 const TeamRecruitCard = ({ team }) => {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const [loading, setLoading] = useState(false);
+
+    const handleSendMessage = async () => {
+        if (!user) {
+            alert('로그인이 필요합니다.');
+            navigate('/login');
+            return;
+        }
+
+        if (user.uid === team.creatorId) {
+            alert('자신에게는 메시지를 보낼 수 없습니다.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const conversation = await getOrCreateConversation(
+                user.uid,
+                { name: user.name || user.displayName, avatar: user.avatar },
+                team.creatorId,
+                { name: team.creatorName, avatar: team.creatorAvatar || '' }
+            );
+
+            // Navigate to chat page with conversation
+            navigate(`/chat?conversationId=${conversation.id}`);
+        } catch (error) {
+            console.error('Error starting conversation:', error);
+            alert('메시지를 보내는 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
@@ -65,11 +103,17 @@ const TeamRecruitCard = ({ team }) => {
                 </div>
             </div>
 
-            <button className="w-full mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
-                지원하기
+            <button
+                onClick={handleSendMessage}
+                disabled={loading}
+                className="w-full mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+                <MessageCircle className="w-4 h-4" />
+                {loading ? '로딩 중...' :
+                    user && user.uid === team.creatorId ? '현황 확인' : '메시지 보내기'}
             </button>
         </div>
     );
 };
 
-export default TeamRecruitCard;
+
