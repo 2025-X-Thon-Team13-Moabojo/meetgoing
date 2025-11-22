@@ -1,48 +1,65 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Users, Eye } from 'lucide-react';
+import { Calendar, Users, Trophy } from 'lucide-react';
 
 const ContestCard = ({ contest }) => {
     return (
-        <Link to={`/contests/${contest.id}`} className="group block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
-            <div className="relative h-48 overflow-hidden">
-                <img
-                    src={contest.image}
-                    alt={contest.title}
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-3 right-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${contest.dday === 'D-0' ? 'bg-red-500' : 'bg-indigo-600'
-                        }`}>
-                        {contest.dday}
-                    </span>
-                </div>
-                <div className="absolute top-3 left-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/90 text-gray-700 backdrop-blur-sm">
-                        {contest.category}
-                    </span>
-                </div>
+        <Link to={`/contests/${contest.id}`} className="group block bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all p-6">
+            {/* Top Badges */}
+            <div className="flex justify-between items-start mb-4">
+                <span className="px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600">
+                    {contest.category}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${contest.dday === 'D-0' ? 'bg-red-600' : 'bg-red-500'
+                    }`}>
+                    {contest.dday}
+                </span>
             </div>
 
-            <div className="p-5">
-                <div className="mb-3">
-                    <h3 className="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-indigo-600 transition-colors">
-                        {contest.title}
-                    </h3>
-                    <p className="text-sm text-gray-500">{contest.host}</p>
-                </div>
+            {/* Title & Subtitle */}
+            <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                    {contest.title}
+                </h3>
+                <p className="text-sm font-medium text-indigo-600 mb-2">
+                    {contest.host}
+                </p>
+                <p className="text-sm text-gray-500 line-clamp-2">
+                    {contest.description}
+                </p>
+            </div>
 
-                <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-50">
-                    <div className="flex items-center space-x-4">
-                        <div className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-1.5" />
-                            <span>{contest.period}</span>
-                        </div>
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2 mb-6">
+                {contest.tags && contest.tags.map((tag, index) => (
+                    <span key={index} className="px-3 py-1 rounded-full text-xs font-medium border border-gray-200 text-gray-600">
+                        {tag}
+                    </span>
+                ))}
+            </div>
+
+            {/* Bottom Info */}
+            <div className="flex items-center justify-between text-sm text-gray-600 pt-4 border-t border-gray-100">
+                <div className="flex flex-col space-y-1">
+                    <div className="flex items-center text-yellow-600 font-medium">
+                        <Trophy className="w-4 h-4 mr-2" />
+                        <span>상금</span>
                     </div>
-                    <div className="flex items-center">
-                        <Eye className="w-4 h-4 mr-1.5" />
-                        <span>{contest.views}</span>
+                    <span className="text-gray-900 font-semibold pl-6">{contest.prize}</span>
+                </div>
+                <div className="flex flex-col space-y-1">
+                    <div className="flex items-center text-gray-500">
+                        <Users className="w-4 h-4 mr-2" />
+                        <span>참가자</span>
                     </div>
+                    <span className="text-gray-900 font-semibold pl-6">{contest.participants}명</span>
+                </div>
+                <div className="flex flex-col space-y-1 text-right">
+                    <div className="flex items-center justify-end text-gray-500">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <span>마감일</span>
+                    </div>
+                    <span className="text-gray-900 font-semibold">{contest.deadline}</span>
                 </div>
             </div>
         </Link>

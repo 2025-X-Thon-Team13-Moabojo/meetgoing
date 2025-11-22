@@ -8,14 +8,18 @@ export const contests = [
         period: "11.10~11.30",
         category: "요리/아이디어",
         target: "누구나",
-        image: "https://www.contestkorea.com/admin/data/main_img/202510200044.jpg", // Placeholder or real URL if accessible
-        description: "파파존스의 새로운 피자 레시피를 찾습니다! 총 상금 1,000만원에 도전하세요.",
-        views: 1240
+        image: "https://www.contestkorea.com/admin/data/main_img/202510200044.jpg",
+        description: "독창적인 스토리로 차세대 웹툰 작가에 도전하세요",
+        views: 1240,
+        prize: "1,500만원",
+        participants: 312,
+        deadline: "2025년 11월 30일",
+        tags: ["웹툰", "스토리텔링", "창작"]
     },
     {
         id: 2,
         title: "2025 제17회 전국청소년 모형항공기대회",
-        host: "사천시, 한국폴리텍대학 항공 캠퍼스",
+        host: "사천시, 한국폴리텍대학",
         dday: "D-0",
         status: "마감임박",
         period: "10.27~11.22",
@@ -23,7 +27,11 @@ export const contests = [
         target: "청소년",
         image: "https://www.contestkorea.com/admin/data/main_img/202508210081.jpg",
         description: "항공 우주 과학의 꿈을 펼쳐라! 전국 청소년 모형항공기 대회.",
-        views: 850
+        views: 850,
+        prize: "500만원",
+        participants: 156,
+        deadline: "2025년 11월 22일",
+        tags: ["과학", "항공", "청소년"]
     },
     {
         id: 3,
@@ -36,7 +44,11 @@ export const contests = [
         target: "누구나",
         image: "https://www.contestkorea.com/admin/data/main_img/202502190045.jpg",
         description: "한국 문학의 미래를 이끌어갈 신인 작가를 찾습니다.",
-        views: 602
+        views: 602,
+        prize: "1,000만원",
+        participants: 89,
+        deadline: "2026년 01월 05일",
+        tags: ["문학", "시나리오", "작가"]
     },
     {
         id: 4,
@@ -49,7 +61,11 @@ export const contests = [
         target: "누구나",
         image: "https://www.contestkorea.com/admin/data/main_img/202511210004.jpg",
         description: "이순신 장군의 정신을 담은 창작곡을 공모합니다.",
-        views: 320
+        views: 320,
+        prize: "300만원",
+        participants: 45,
+        deadline: "2025년 12월 03일",
+        tags: ["음악", "작곡", "예술"]
     },
     {
         id: 5,
@@ -62,6 +78,10 @@ export const contests = [
         target: "대학생/일반인",
         image: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&q=80&w=1000",
         description: "실전 프로젝트로 포트폴리오를 완성할 수 있는 기회!",
-        views: 450
+        views: 450,
+        prize: "200만원",
+        participants: 120,
+        deadline: "2025년 12월 07일",
+        tags: ["영상", "UCC", "포트폴리오"]
     }
 ];
