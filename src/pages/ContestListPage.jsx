@@ -1,78 +1,126 @@
-import React, { useState } from 'react';
-import { Search, Filter } from 'lucide-react';
-import ContestCard from '../components/features/ContestCard';
-import { contests } from '../data/contests';
+import React, { useState, useEffect } from 'react';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 
 const ContestListPage = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [contests, setContests] = useState([]);
+    const [filteredContests, setFilteredContests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchName, setSearchName] = useState('');
+    const [searchCategory, setSearchCategory] = useState('');
+    const navigate = useNavigate();
 
-    const categories = ['All', '요리/아이디어', '과학/IT', '문학/시나리오', '음악/예술', '영상/UCC'];
+    useEffect(() => {
+        const fetchContests = async () => {
+            try {
+                const q = query(collection(db, 'contests'), orderBy('scrapedAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const contestList = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setContests(contestList);
+                setFilteredContests(contestList);
+            } catch (error) {
+                console.error("Error fetching contests:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const filteredContests = contests.filter(contest => {
-        const matchesSearch = contest.title.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === 'All' || contest.category === selectedCategory;
-        return matchesSearch && matchesCategory;
-    });
+        fetchContests();
+    }, []);
+
+    useEffect(() => {
+        let filtered = contests;
+
+        if (searchName) {
+            filtered = filtered.filter(contest =>
+                contest.title?.toLowerCase().includes(searchName.toLowerCase())
+            );
+        }
+
+        if (searchCategory) {
+            filtered = filtered.filter(contest =>
+                contest.category?.toLowerCase().includes(searchCategory.toLowerCase())
+            );
+        }
+
+        setFilteredContests(filtered);
+    }, [searchName, searchCategory, contests]);
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Contests</h1>
-                    <p className="mt-2 text-gray-600">Find the perfect competition to challenge yourself.</p>
+        <div className="p-6 bg-gray-50 min-h-screen">
+            <h1 className="text-3xl font-bold mb-6 text-gray-800">공모전 리스트</h1>
+
+            {/* Search Bar */}
+            <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                            type="text"
+                            placeholder="공모전 이름으로 검색..."
+                            value={searchName}
+                            onChange={(e) => setSearchName(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                    </div>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                            type="text"
+                            placeholder="카테고리로 검색..."
+                            value={searchCategory}
+                            onChange={(e) => setSearchCategory(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                    </div>
                 </div>
+                <p className="text-sm text-gray-500 mt-2">
+                    총 {filteredContests.length}개의 공모전
+                </p>
+            </div>
 
-                {/* Filters & Search */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-8">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center space-x-2 overflow-x-auto pb-2 md:pb-0">
-                            {categories.map(category => (
-                                <button
-                                    key={category}
-                                    onClick={() => setSelectedCategory(category)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    {category}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="relative w-full md:w-72">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Search className="h-5 w-5 text-gray-400" />
+            {/* Contest Grid - Smaller Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {filteredContests.map((contest) => (
+                    <div
+                        key={contest.id}
+                        className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex flex-col"
+                        onClick={() => navigate(`/contest/${contest.id}`)}
+                    >
+                        <div className="relative w-full pt-[141.4%] bg-gray-200">
+                            {contest.posterUrl ? (
+                                <img
+                                    src={contest.posterUrl}
+                                    alt={contest.title}
+                                    className="absolute top-0 left-0 w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                                    No Image
+                                </div>
+                            )}
+                            <div className="absolute top-1 right-1 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                                {contest.dDay}
                             </div>
-                            <input
-                                type="text"
-                                placeholder="Search contests..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            />
+                        </div>
+                        <div className="p-3 flex-1 flex flex-col">
+                            <div className="text-xs text-blue-600 font-semibold mb-1 truncate">{contest.category}</div>
+                            <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2">{contest.title}</h3>
+                            <div className="mt-auto text-xs text-gray-600">
+                                <p className="truncate">{contest.host}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredContests.map(contest => (
-                        <ContestCard key={contest.id} contest={contest} />
-                    ))}
-                </div>
-
-                {filteredContests.length === 0 && (
-                    <div className="text-center py-20">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                            <Search className="w-8 h-8 text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-medium text-gray-900">No contests found</h3>
-                        <p className="mt-2 text-gray-500">Try adjusting your search or filters.</p>
-                    </div>
-                )}
+                ))}
             </div>
         </div>
     );

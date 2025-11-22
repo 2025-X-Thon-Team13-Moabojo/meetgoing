@@ -73,7 +73,18 @@ const ChatPage = () => {
                             </div>
                         ) : (
                             conversations.map(conversation => {
-                                const otherParticipant = getOtherParticipant(conversation);
+                                let name, avatar;
+
+                                if (conversation.isGroup) {
+                                    name = conversation.name;
+                                    // Use a placeholder or team icon for group chats
+                                    avatar = null;
+                                } else {
+                                    const otherParticipant = getOtherParticipant(conversation);
+                                    name = otherParticipant.name;
+                                    avatar = otherParticipant.avatar;
+                                }
+
                                 return (
                                     <button
                                         key={conversation.id}
@@ -81,15 +92,22 @@ const ChatPage = () => {
                                         className={`w-full p-4 flex items-start space-x-3 hover:bg-gray-50 transition-colors text-left ${selectedConversation?.id === conversation.id ? 'bg-indigo-50 hover:bg-indigo-50' : ''
                                             }`}
                                     >
-                                        <img
-                                            src={otherParticipant.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherParticipant.name)}&background=random`}
-                                            alt={otherParticipant.name}
-                                            className="w-10 h-10 rounded-full object-cover"
-                                        />
+                                        {conversation.isGroup ? (
+                                            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold flex-shrink-0">
+                                                {name[0]}
+                                            </div>
+                                        ) : (
+                                            <img
+                                                src={avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`}
+                                                alt={name}
+                                                className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                            />
+                                        )}
+
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-baseline">
                                                 <h3 className="text-sm font-semibold text-gray-900 truncate">
-                                                    {otherParticipant.name}
+                                                    {name}
                                                 </h3>
                                                 {conversation.lastMessage && (
                                                     <span className="text-xs text-gray-500">
