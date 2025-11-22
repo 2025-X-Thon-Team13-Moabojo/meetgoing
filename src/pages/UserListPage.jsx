@@ -27,13 +27,13 @@ const UserListPage = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Find Teammates</h1>
-                        <p className="mt-2 text-gray-600">Discover talented individuals for your next project.</p>
+                        <h1 className="text-3xl font-bold text-gray-900">팀원 찾기</h1>
+                        <p className="mt-2 text-gray-600">프로젝트를 함께할 팀원을 찾아보세요.</p>
                     </div>
                     <div className="mt-4 md:mt-0">
                         <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             <SlidersHorizontal className="w-4 h-4 mr-2" />
-                            Advanced Filters
+                            상세 필터
                         </button>
                     </div>
                 </div>
@@ -48,7 +48,7 @@ const UserListPage = () => {
                             <input
                                 type="text"
                                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="Search by name, role, or bio..."
+                                placeholder="이름, 역할, 소개로 검색..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -62,7 +62,7 @@ const UserListPage = () => {
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
                             >
-                                <option value="">All Categories</option>
+                                <option value="">전체 카테고리</option>
                                 {jobCategories.map(cat => (
                                     <option key={cat.id} value={cat.name}>{cat.name}</option>
                                 ))}
@@ -77,7 +77,7 @@ const UserListPage = () => {
                                 value={selectedTech}
                                 onChange={(e) => setSelectedTech(e.target.value)}
                             >
-                                <option value="">All Tech Stacks</option>
+                                <option value="">전체 기술 스택</option>
                                 {allTechStacks.map((tech, index) => (
                                     <option key={index} value={tech}>{tech}</option>
                                 ))}
@@ -95,7 +95,7 @@ const UserListPage = () => {
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-gray-500 text-lg">No users found matching your criteria.</p>
+                        <p className="text-gray-500 text-lg">조건에 맞는 사용자가 없습니다.</p>
                         <button
                             onClick={() => {
                                 setSearchTerm('');
@@ -104,7 +104,7 @@ const UserListPage = () => {
                             }}
                             className="mt-4 text-indigo-600 hover:text-indigo-800 font-medium"
                         >
-                            Clear all filters
+                            필터 초기화
                         </button>
                     </div>
                 )}

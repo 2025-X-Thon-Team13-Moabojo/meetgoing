@@ -36,28 +36,28 @@ const Navbar = () => {
                                 className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/teams') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
-                                Find Team
+                                팀 찾기
                             </Link>
                             <Link
                                 to="/users"
                                 className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/users') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
-                                Find Teammates
+                                팀원 찾기
                             </Link>
                             <Link
                                 to="/contests"
                                 className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/contests') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
-                                Contests
+                                공모전
                             </Link>
                             <Link
                                 to="/chat"
                                 className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/chat') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
-                                Chat
+                                메시지
                             </Link>
                         </div>
                     </div>
@@ -89,13 +89,13 @@ const Navbar = () => {
                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                                             onClick={() => setShowDropdown(false)}
                                         >
-                                            <UserIcon className="w-4 h-4 mr-2" /> Profile
+                                            <UserIcon className="w-4 h-4 mr-2" /> 프로필
                                         </Link>
                                         <button
                                             onClick={handleLogout}
                                             className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 flex items-center"
                                         >
-                                            <LogOut className="w-4 h-4 mr-2" /> Log out
+                                            <LogOut className="w-4 h-4 mr-2" /> 로그아웃
                                         </button>
                                     </div>
                                 )}
@@ -103,13 +103,13 @@ const Navbar = () => {
                         ) : (
                             <>
                                 <Link to="/login" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                                    Log in
+                                    로그인
                                 </Link>
                                 <Link
                                     to="/signup"
                                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-sm hover:shadow-md"
                                 >
-                                    Sign up
+                                    회원가입
                                 </Link>
                             </>
                         )}

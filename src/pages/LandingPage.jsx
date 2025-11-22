@@ -28,11 +28,10 @@ const LandingPage = () => {
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-6">
-                        Find your perfect <span className="text-indigo-600">hackathon team</span>
-                        <br className="hidden sm:block" /> in minutes.
+                        공모전으로 <span className="text-indigo-600">팀을 찾아보세요</span>
                     </h1>
                     <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-600 mb-8">
-                        Connect with talented developers, designers, and PMs. Build amazing projects and win competitions together.
+                        8개의 진행 중인 공모전에서 완벽한 팀원을 만나세요
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
                         <form onSubmit={handleSearch} className="relative w-full max-w-2xl mx-auto">
@@ -42,14 +41,14 @@ const LandingPage = () => {
                                     type="text"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Search for contests, hackathons, or keywords..."
+                                    placeholder="공모전, 주최기관, 태그로 검색하세요..."
                                     className="w-full py-3 pl-12 pr-4 text-base bg-white border border-gray-200 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                 />
                                 <button
                                     type="submit"
                                     className="absolute right-2 px-4 py-1.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors text-sm"
                                 >
-                                    Search
+                                    검색
                                 </button>
                             </div>
                         </form>
@@ -62,11 +61,11 @@ const LandingPage = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-end mb-12">
                         <div>
-                            <h2 className="text-3xl font-bold text-gray-900">Popular Contests</h2>
-                            <p className="mt-4 text-lg text-gray-600">Join the hottest competitions right now</p>
+                            <h2 className="text-3xl font-bold text-gray-900">인기 공모전</h2>
+                            <p className="mt-4 text-lg text-gray-600">지금 가장 핫한 공모전에 참여하세요</p>
                         </div>
                         <Link to="/contests" className="hidden sm:flex items-center text-indigo-600 font-medium hover:text-indigo-700">
-                            View all contests <ArrowRight className="ml-2 w-5 h-5" />
+                            전체 공모전 보기 <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     </div>
 
@@ -78,7 +77,7 @@ const LandingPage = () => {
 
                     <div className="mt-12 text-center sm:hidden">
                         <Link to="/contests" className="inline-flex items-center text-indigo-600 font-medium hover:text-indigo-700">
-                            View all contests <ArrowRight className="ml-2 w-5 h-5" />
+                            전체 공모전 보기 <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     </div>
                 </div>
