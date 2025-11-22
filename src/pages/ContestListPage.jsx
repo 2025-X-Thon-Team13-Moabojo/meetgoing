@@ -3,6 +3,7 @@ import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import { getCategoryLabels, assignContestCategory } from '../constants/contestCategories';
 
 const ContestListPage = () => {
     const [contests, setContests] = useState([]);
@@ -17,10 +18,15 @@ const ContestListPage = () => {
             try {
                 const q = query(collection(db, 'contests'), orderBy('scrapedAt', 'desc'));
                 const querySnapshot = await getDocs(q);
-                const contestList = querySnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                const contestList = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        // Auto-assign smart category if not already assigned
+                        smartCategory: assignContestCategory(data.title, data.category)
+                    };
+                });
                 setContests(contestList);
                 setFilteredContests(contestList);
             } catch (error) {
@@ -44,7 +50,7 @@ const ContestListPage = () => {
 
         if (searchCategory) {
             filtered = filtered.filter(contest =>
-                contest.category?.toLowerCase().includes(searchCategory.toLowerCase())
+                contest.smartCategory === searchCategory
             );
         }
 
@@ -73,14 +79,16 @@ const ContestListPage = () => {
                         />
                     </div>
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="카테고리로 검색..."
+                        <select
                             value={searchCategory}
                             onChange={(e) => setSearchCategory(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        />
+                            className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none bg-white"
+                        >
+                            <option value="">모든 카테고리</option>
+                            {getCategoryLabels().map((label) => (
+                                <option key={label} value={label}>{label}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
@@ -94,7 +102,7 @@ const ContestListPage = () => {
                     <div
                         key={contest.id}
                         className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex flex-col"
-                        onClick={() => navigate(`/contest/${contest.id}`)}
+                        onClick={() => navigate(`/contests/${contest.id}`)}
                     >
                         <div className="relative w-full pt-[141.4%] bg-gray-200">
                             {contest.posterUrl ? (
