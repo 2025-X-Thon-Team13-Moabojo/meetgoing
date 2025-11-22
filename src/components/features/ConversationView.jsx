@@ -15,6 +15,7 @@ const ConversationView = ({ conversation }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [searching, setSearching] = useState(false);
+    const [showMemberList, setShowMemberList] = useState(false);
     const messagesEndRef = useRef(null);
 
     // Get the other participant's ID (for 1:1 chats)
@@ -181,7 +182,16 @@ const ConversationView = ({ conversation }) => {
         <div className="flex flex-col h-full relative">
             {/* Header */}
             <div className="px-6 py-4 border-b border-gray-200 bg-white flex justify-between items-center">
-                <div className="flex items-center gap-3">
+                <div
+                    className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                        if (conversation.isGroup) {
+                            setShowMemberList(true);
+                        } else {
+                            navigate(`/users/${otherParticipantId}`);
+                        }
+                    }}
+                >
                     {conversation.isGroup ? (
                         <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
                             {conversation.name[0]}
@@ -414,6 +424,50 @@ const ConversationView = ({ conversation }) => {
                                     {searching ? '검색 중...' : '검색 결과가 없습니다.'}
                                 </p>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Member List Modal */}
+            {showMemberList && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold text-gray-900">대화 참여자 ({conversation.participants.length})</h3>
+                            <button onClick={() => setShowMemberList(false)} className="text-gray-400 hover:text-gray-600">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="max-h-80 overflow-y-auto space-y-2">
+                            {conversation.participants.map(participantId => {
+                                const details = conversation.participantDetails?.[participantId] || { name: 'Unknown' };
+                                const isMe = participantId === user.uid;
+                                return (
+                                    <div
+                                        key={participantId}
+                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                                        onClick={() => {
+                                            navigate(`/users/${participantId}`);
+                                            setShowMemberList(false);
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <img
+                                                src={details.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(details.name)}&background=random`}
+                                                alt={details.name}
+                                                className="w-10 h-10 rounded-full object-cover"
+                                            />
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-900">
+                                                    {details.name}
+                                                    {isMe && <span className="text-xs text-gray-500 ml-1">(나)</span>}
+                                                </p>
+                                                {details.role && <p className="text-xs text-indigo-600">{details.role}</p>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

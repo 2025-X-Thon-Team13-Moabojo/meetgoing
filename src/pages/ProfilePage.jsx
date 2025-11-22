@@ -3,18 +3,28 @@ import { User, MapPin, Briefcase, Code, Clock, Save, X, GraduationCap, Award, Tr
 import { useAuth } from '../context/AuthContext';
 import { jobCategories } from '../data/jobCategories';
 import { REGIONS } from '../utils/domainData';
+import { useParams } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const ProfilePage = () => {
-    const { user, updateProfile, isLoading } = useAuth();
+    const { user: currentUser, updateProfile, isLoading: authLoading } = useAuth();
+    const { userId } = useParams();
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState('basic'); // basic, skills, achievements
+    const [viewUser, setViewUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    // Determine if we are viewing our own profile or someone else's
+    const isOwnProfile = !userId || (currentUser && userId === currentUser.uid);
+    const canEdit = isOwnProfile && !userId; // Only allow edit if visiting /profile directly (or logic could be isOwnProfile)
 
     // Initialize state with user data or defaults
     const [profile, setProfile] = useState({
         name: '',
-        categories: [],      // Changed from category to categories array
-        subCategories: [],   // Changed from subCategory to subCategories array
-        roles: [],           // Changed from role to roles array
+        categories: [],
+        subCategories: [],
+        roles: [],
         region: '',
         techStack: [],
         interests: [],
@@ -31,25 +41,62 @@ const ProfilePage = () => {
         awards: ''
     });
 
-    // Update local state when user context changes
     useEffect(() => {
-        if (user) {
-            setProfile({
-                name: user.name || '',
-                categories: user.categories || [],
-                subCategories: user.subCategories || [],
-                roles: user.roles || [],
-                region: user.region || '',
-                techStack: user.techStack || [],
-                interests: user.interests || [],
-                availableTime: user.availableTime || '',
-                bio: user.bio || '',
-                school: user.school || '',
-                major: user.major || '',
-                awards: user.awards || []
-            });
+        const fetchUserData = async () => {
+            setLoading(true);
+            if (isOwnProfile) {
+                if (currentUser) {
+                    setViewUser(currentUser);
+                    setProfile({
+                        name: currentUser.name || '',
+                        categories: currentUser.categories || [],
+                        subCategories: currentUser.subCategories || [],
+                        roles: currentUser.roles || [],
+                        region: currentUser.region || '',
+                        techStack: currentUser.techStack || [],
+                        interests: currentUser.interests || [],
+                        availableTime: currentUser.availableTime || '',
+                        bio: currentUser.bio || '',
+                        school: currentUser.school || '',
+                        major: currentUser.major || '',
+                        awards: currentUser.awards || []
+                    });
+                }
+            } else {
+                try {
+                    const docRef = doc(db, 'users', userId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+                        setViewUser(userData);
+                        setProfile({
+                            name: userData.name || '',
+                            categories: userData.categories || [],
+                            subCategories: userData.subCategories || [],
+                            roles: userData.roles || [],
+                            region: userData.region || '',
+                            techStack: userData.techStack || [],
+                            interests: userData.interests || [],
+                            availableTime: userData.availableTime || '',
+                            bio: userData.bio || '',
+                            school: userData.school || '',
+                            major: userData.major || '',
+                            awards: userData.awards || []
+                        });
+                    } else {
+                        console.log("No such user!");
+                    }
+                } catch (error) {
+                    console.error("Error fetching user:", error);
+                }
+            }
+            setLoading(false);
+        };
+
+        if (!authLoading) {
+            fetchUserData();
         }
-    }, [user]);
+    }, [userId, currentUser, authLoading, isOwnProfile]);
 
     const handleSave = () => {
         updateProfile(profile);
@@ -146,12 +193,12 @@ const ProfilePage = () => {
         }));
     };
 
-    if (isLoading) {
+    if (loading || authLoading) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
-    if (!user) {
-        return <div className="min-h-screen flex items-center justify-center">Please log in to view profile.</div>;
+    if (!viewUser) {
+        return <div className="min-h-screen flex items-center justify-center">User not found.</div>;
     }
 
     return (
@@ -164,7 +211,7 @@ const ProfilePage = () => {
                         <div className="relative flex justify-between items-end -mt-12 mb-6">
                             <div className="flex items-end">
                                 <img
-                                    src={user.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150"}
+                                    src={viewUser.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150"}
                                     alt="Profile"
                                     className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg object-cover"
                                 />
@@ -180,7 +227,7 @@ const ProfilePage = () => {
                                     </div>
                                 </div>
                             </div>
-                            {!isEditing && (
+                            {!isEditing && isOwnProfile && (
                                 <button
                                     onClick={() => setIsEditing(true)}
                                     className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
@@ -339,11 +386,11 @@ const ProfilePage = () => {
                                                     onChange={(e) => setProfile({ ...profile, school: e.target.value })}
                                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent mb-4"
                                                 >
-                                                    <option value="">학교를 선택하세요</option>
-                                                    <option value="Elementary School">초등학교</option>
-                                                    <option value="Middle School">중학교</option>
-                                                    <option value="High School">고등학교</option>
-                                                    <option value="University">대학교</option>
+                                                    <option value="">학교/신분 선택</option>
+                                                    <option value="Underage">미자 (초/중/고)</option>
+                                                    <option value="University">대학</option>
+                                                    <option value="Graduate School">대학원</option>
+                                                    <option value="General Public">일반인</option>
                                                 </select>
 
                                                 {profile.school === 'University' && (

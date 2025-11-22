@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Sparkles } from 'lucide-react';
 import UserCard from '../components/features/UserCard';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -14,6 +14,7 @@ const UserListPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedTech, setSelectedTech] = useState('');
     const [users, setUsers] = useState([]);
+    const [recommendedUsers, setRecommendedUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // 0. Priority: Check Authentication
@@ -38,7 +39,17 @@ const UserListPage = () => {
                 // If current user is logged in and has profile data, use matching system
                 if (currentUser && (currentUser.category || currentUser.categories)) {
                     const { findBestMatch } = await import('../utils/matchingSystem');
-                    usersData = findBestMatch(currentUser, usersData);
+                    // Get all matches sorted by score
+                    const allMatches = findBestMatch(currentUser, usersData);
+
+                    // Set main list (can be same as allMatches or just raw data, but let's keep it sorted)
+                    setUsers(allMatches);
+
+                    // Extract top recommendations (score > 60)
+                    const recommendations = allMatches
+                        .filter(u => u.score >= 60)
+                        .slice(0, 4);
+                    setRecommendedUsers(recommendations);
                 } else {
                     // Default sort by createdAt
                     usersData.sort((a, b) => {
@@ -46,9 +57,8 @@ const UserListPage = () => {
                         const bTime = b.createdAt?.seconds || 0;
                         return bTime - aTime;
                     });
+                    setUsers(usersData);
                 }
-
-                setUsers(usersData);
             } catch (error) {
                 console.error('Error fetching users:', error);
                 setUsers([]); // Set empty array on error
@@ -157,6 +167,29 @@ const UserListPage = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* AI Recommendations */}
+                {currentUser && recommendedUsers.length > 0 && !searchTerm && !selectedCategory && !selectedTech && (
+                    <div className="mb-12">
+                        <div className="flex items-center gap-2 mb-6">
+                            <Sparkles className="w-6 h-6 text-indigo-600" />
+                            <h2 className="text-2xl font-bold text-gray-900">
+                                {currentUser.name}님을 위한 AI 맞춤 추천 팀원
+                            </h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {recommendedUsers.map(user => (
+                                <div key={`rec-${user.id}`} className="relative">
+                                    <div className="absolute -top-3 -right-3 z-10 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                                        AI 추천
+                                    </div>
+                                    <UserCard user={user} />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="my-8 border-b border-gray-200"></div>
+                    </div>
+                )}
 
                 {/* Content */}
                 {loading ? (

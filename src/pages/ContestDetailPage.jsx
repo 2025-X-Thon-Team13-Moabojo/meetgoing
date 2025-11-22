@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ArrowLeft } from 'lucide-react';
 
@@ -18,6 +18,15 @@ const ContestDetailPage = () => {
 
                 if (docSnap.exists()) {
                     setContest(docSnap.data());
+
+                    // Increment view count
+                    try {
+                        await updateDoc(docRef, {
+                            viewCount: increment(1)
+                        });
+                    } catch (e) {
+                        console.error("Error incrementing view count:", e);
+                    }
                 } else {
                     console.log("No such document!");
                 }

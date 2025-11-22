@@ -1,12 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Users, Trophy, Briefcase, ArrowRight, CheckCircle, Search } from 'lucide-react';
 import ContestCard from '../components/features/ContestCard';
-import { contests } from '../data/contests';
+import { db } from '../firebase';
+import { collection, query, orderBy, limit, getDocs, getCountFromServer } from 'firebase/firestore';
 
 const LandingPage = () => {
     const navigate = useNavigate();
-    const [searchTerm, setSearchTerm] = React.useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [totalContests, setTotalContests] = useState(0);
+    const [popularContests, setPopularContests] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // 1. Get Total Count
+                const coll = collection(db, "contests");
+                const snapshot = await getCountFromServer(coll);
+                setTotalContests(snapshot.data().count);
+
+                // 2. Get Popular Contests (Top 3 by viewCount)
+                const q = query(coll, orderBy("viewCount", "desc"), limit(3));
+                const querySnapshot = await getDocs(q);
+                const popular = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setPopularContests(popular);
+            } catch (error) {
+                console.error("Error fetching landing page data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -31,7 +61,11 @@ const LandingPage = () => {
                         뜻을 함께할 <span className="text-indigo-600">동료들을 찾아보세요</span>
                     </h1>
                     <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-600 mb-8">
-                        8개의 진행 중인 공모전에서 완벽한 팀원을 만나세요
+                        {totalContests > 0 ? (
+                            <>{totalContests}개의 진행 중인 공모전에서 완벽한 팀원을 만나세요</>
+                        ) : (
+                            <>수많은 공모전에서 완벽한 팀원을 만나세요</>
+                        )}
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
                         <form onSubmit={handleSearch} className="relative w-full max-w-2xl mx-auto">
@@ -69,13 +103,21 @@ const LandingPage = () => {
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-
-                        {contests.slice(0, 3).map(contest => (
-                            <ContestCard key={contest.id} contest={contest} />
-
-                        ))}
-                    </div>
+                    {loading ? (
+                        <div className="text-center py-12">Loading...</div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {popularContests.length > 0 ? (
+                                popularContests.map(contest => (
+                                    <ContestCard key={contest.id} contest={contest} />
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center text-gray-500">
+                                    아직 인기 공모전 데이터가 충분하지 않습니다.
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="mt-12 text-center sm:hidden">
                         <Link to="/contests" className="inline-flex items-center text-indigo-600 font-medium hover:text-indigo-700">

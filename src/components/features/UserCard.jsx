@@ -60,7 +60,7 @@ const UserCard = ({ user }) => {
                     적합도 {user.score}점
                 </div>
             )}
-            <div className="p-6">
+            <div className="p-6 cursor-pointer" onClick={() => navigate(`/users/${user.id}`)}>
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
                         <img
@@ -122,16 +122,15 @@ const UserCard = ({ user }) => {
             </div>
             <div className="bg-gray-50 px-6 py-3 flex justify-between items-center">
                 <button
-                    onClick={handleSendMessage}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleSendMessage();
+                    }}
                     disabled={loading}
-                    className="flex-1 mr-2 py-2 flex items-center justify-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    className="w-full py-2 flex items-center justify-center text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:bg-gray-200 disabled:cursor-not-allowed"
                 >
                     <MessageCircle className="w-4 h-4 mr-2" />
                     {loading ? '로딩 중...' : '메시지'}
-                </button>
-                <button className="flex-1 ml-2 py-2 flex items-center justify-center text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    초대
                 </button>
             </div>
         </div>

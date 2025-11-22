@@ -35,6 +35,7 @@ function App() {
           <Route path="/teams" element={<TeamListPage />} />
           <Route path="/teams/new" element={<CreateTeamPage />} />
           <Route path="/users" element={<UserListPage />} />
+          <Route path="/users/:userId" element={<ProfilePage />} />
           <Route path="/matches" element={<MatchesPage />} />
           <Route path="/chat" element={<ChatPage />} />
         </Route>

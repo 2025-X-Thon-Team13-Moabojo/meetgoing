@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Sparkles } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import TeamRecruitCard from '../components/features/TeamRecruitCard';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 
 const TeamListPage = () => {
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [teams, setTeams] = useState([]);
+    const [recommendedTeams, setRecommendedTeams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchParams] = useSearchParams();
     const applyTeamId = searchParams.get('applyTeam');
@@ -28,6 +31,58 @@ const TeamListPage = () => {
                     return bTime - aTime;
                 });
                 setTeams(teamsData);
+
+                // AI Recommendation Logic
+                if (user) {
+                    const userCategories = user.categories || (user.category ? [user.category] : []);
+                    const userTechStack = (user.techStack || []).map(t => t.toLowerCase());
+                    const userRoles = (user.roles || []).map(r => r.toLowerCase());
+                    const userInterests = (user.interests || []).map(i => i.toLowerCase());
+
+                    const scoredTeams = teamsData.map(team => {
+                        let score = 0;
+                        const teamNameLower = team.name.toLowerCase();
+                        const teamDescLower = team.description.toLowerCase();
+                        const teamRoles = (team.rolesNeeded || []).map(r => r.toLowerCase());
+                        const teamTech = (team.techStack || []).map(t => t.toLowerCase());
+
+                        // 1. Category Match (+20)
+                        // Assuming teams might have a category field, or we infer from description/tags
+                        // If team has no explicit category, we skip this or infer. 
+                        // Let's assume for now we check if user category keywords appear in description
+                        userCategories.forEach(cat => {
+                            if (teamDescLower.includes(cat.toLowerCase())) score += 10;
+                        });
+
+                        // 2. Role Match (+30) - Critical
+                        // If team needs a role the user has
+                        const hasRoleMatch = teamRoles.some(neededRole =>
+                            userRoles.some(userRole => neededRole.includes(userRole) || userRole.includes(neededRole))
+                        );
+                        if (hasRoleMatch) score += 30;
+
+                        // 3. Tech Stack Match (+20)
+                        const techOverlap = teamTech.filter(t => userTechStack.includes(t));
+                        score += techOverlap.length * 5; // 5 points per matching tech
+
+                        // 4. Interest Match (+10)
+                        userInterests.forEach(interest => {
+                            if (teamNameLower.includes(interest) || teamDescLower.includes(interest)) {
+                                score += 5;
+                            }
+                        });
+
+                        return { ...team, score };
+                    });
+
+                    const recommendations = scoredTeams
+                        .filter(t => t.score > 0)
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, 4); // Top 4
+
+                    setRecommendedTeams(recommendations);
+                }
+
             } catch (error) {
                 console.error('Error fetching teams:', error);
                 setTeams([]); // Set empty array on error
@@ -37,7 +92,7 @@ const TeamListPage = () => {
         };
 
         fetchTeams();
-    }, []);
+    }, [user]);
 
     const filteredTeams = teams.filter(team => {
         const matchesSearch =
@@ -80,6 +135,32 @@ const TeamListPage = () => {
                         />
                     </div>
                 </div>
+
+                {/* AI Recommendations */}
+                {user && recommendedTeams.length > 0 && !searchTerm && (
+                    <div className="mb-12">
+                        <div className="flex items-center gap-2 mb-6">
+                            <Sparkles className="w-6 h-6 text-indigo-600" />
+                            <h2 className="text-2xl font-bold text-gray-900">
+                                {user.name}님을 위한 AI 맞춤 추천 팀
+                            </h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {recommendedTeams.map(team => (
+                                <div key={`rec-${team.id}`} className="relative">
+                                    <div className="absolute -top-3 -right-3 z-10 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                                        AI 추천
+                                    </div>
+                                    <TeamRecruitCard
+                                        team={team}
+                                        defaultOpenApply={false}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="my-8 border-b border-gray-200"></div>
+                    </div>
+                )}
 
                 {/* Teams Grid */}
                 {loading ? (
