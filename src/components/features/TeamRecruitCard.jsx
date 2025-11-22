@@ -9,18 +9,21 @@ const TeamRecruitCard = ({ team }) => {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
 
-    const handleSendMessage = async () => {
+    const handleButtonClick = async () => {
         if (!user) {
             alert('로그인이 필요합니다.');
             navigate('/login');
             return;
         }
 
+        // If the logged-in user is the team creator, show status instead of messaging
         if (user.uid === team.creatorId) {
-            alert('자신에게는 메시지를 보낼 수 없습니다.');
+            const memberCount = (team.members && Array.isArray(team.members)) ? team.members.length : 0;
+            alert(`현황 확인:\n팀 인원: ${memberCount}명`);
             return;
         }
 
+        // Otherwise, start a conversation (same as previous logic)
         setLoading(true);
         try {
             const conversation = await getOrCreateConversation(
@@ -29,8 +32,6 @@ const TeamRecruitCard = ({ team }) => {
                 team.creatorId,
                 { name: team.creatorName, avatar: team.creatorAvatar || '' }
             );
-
-            // Navigate to chat page with conversation
             navigate(`/chat?conversationId=${conversation.id}`);
         } catch (error) {
             console.error('Error starting conversation:', error);
@@ -104,7 +105,7 @@ const TeamRecruitCard = ({ team }) => {
             </div>
 
             <button
-                onClick={handleSendMessage}
+                onClick={handleButtonClick}
                 disabled={loading}
                 className="w-full mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
@@ -115,5 +116,7 @@ const TeamRecruitCard = ({ team }) => {
         </div>
     );
 };
+
+export default TeamRecruitCard;
 
 
