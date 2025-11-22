@@ -1,4 +1,8 @@
-import { CATEGORIES, SUBCATEGORIES, TECH_STACKS } from './domainData.js';
+// Domain data imports removed as they are not currently used in this utility
+// import { CATEGORIES, SUBCATEGORIES, TECH_STACKS } from './domainData.js';
+
+// Helper: Data Normalization
+const getList = (val) => Array.isArray(val) ? val : (val ? [val] : []);
 
 /**
  * Calculates the suitability score between two users.
@@ -7,82 +11,53 @@ import { CATEGORIES, SUBCATEGORIES, TECH_STACKS } from './domainData.js';
  * - SubCategory: Match/Overlap -> Bonus.
  * - Tech Stack: Different -> Bonus, Same -> Penalty.
  * - Normalization: -100 to 100.
- * 
  * @param {Object} userA - The target user (current user).
  * @param {Object} userB - The candidate user.
- * @returns {number} - The normalized score (-100 to 100).
+ * @returns {number} - The normalized score (0 to 100).
  */
 export function calculateSuitability(userA, userB) {
-    // 0. Data Normalization (Handle string vs array)
-    const getList = (val) => Array.isArray(val) ? val : (val ? [val] : []);
-
     const catsA = getList(userA.category || userA.categories);
     const catsB = getList(userB.category || userB.categories);
 
     const subCatsA = getList(userA.subCategory || userA.subCategories);
     const subCatsB = getList(userB.subCategory || userB.subCategories);
 
+    // 1. Main Category Match (Fixed 40 points)
+    const hasCategoryMatch = catsA.some(c => catsB.includes(c));
+    if (!hasCategoryMatch) return 0; // No match -> 0 score
+
+    const scoreCategory = 40;
+
+    // 2. Sub Category Match (Variable up to 30 points) - Similarity is better
+    // Using Jaccard Index (Intersection / Union)
+    const subIntersection = subCatsA.filter(s => subCatsB.includes(s));
+    const subUnion = new Set([...subCatsA, ...subCatsB]);
+
+    let scoreSub = 0;
+    if (subUnion.size > 0) {
+        const matchRatio = subIntersection.length / subUnion.size;
+        scoreSub = matchRatio * 30;
+    }
+
+    // 3. Tech Stack Match (Variable up to 30 points) - Difference is better
+    // Using Jaccard Distance (1 - Jaccard Index)
     const techA = getList(userA.techStack);
     const techB = getList(userB.techStack);
 
-    // 1. Category Filter (Pre-check, though findBestMatch should handle this)
-    // We assume at least one category overlaps
-    const hasCategoryMatch = catsA.some(c => catsB.includes(c));
-    if (!hasCategoryMatch) return -100;
+    const techIntersection = techA.filter(t => techB.includes(t));
+    const techUnion = new Set([...techA, ...techB]);
 
-    // 2. SubCategory Score (More overlap = Higher score)
-    // Intersection count
-    const subCatMatches = subCatsA.filter(s => subCatsB.includes(s)).length;
-    const WEIGHT_SUBCAT = 20;
-    const subCatScore = subCatMatches * WEIGHT_SUBCAT;
+    let scoreTech = 0;
+    if (techUnion.size > 0) {
+        const similarityRatio = techIntersection.length / techUnion.size;
+        // We want difference, so 1 - similarity
+        scoreTech = (1 - similarityRatio) * 30;
+    } else {
+        scoreTech = 0;
+    }
 
-    // 3. Tech Stack Score
-    // Same -> Penalty, Different -> Bonus
-    const intersection = techA.filter(t => techB.includes(t));
-    const sameCount = intersection.length;
-
-    // Symmetric Difference: (A - B) U (B - A)
-    // = (A union B) - (A intersection B)
-    // or just count items in A not in B + items in B not in A
-    const diffCount = (techA.length - sameCount) + (techB.length - sameCount);
-
-    const WEIGHT_DIFF = 5; // Bonus for difference
-    const WEIGHT_SAME = 5; // Penalty for same
-
-    const techScore = (diffCount * WEIGHT_DIFF) - (sameCount * WEIGHT_SAME);
-
-    const rawScore = subCatScore + techScore;
-
-    // 4. Normalization (-100 to 100)
-    // Calculate Theoretical Max and Min for this pair's configuration
-    // Max: All subcats match (min len), All techs different (sum len)
-    const maxSubMatches = Math.min(subCatsA.length, subCatsB.length); // Max possible overlap
-    // Actually, user said "more overlap = bonus". 
-    // If lists are different lengths, max overlap is min length.
-
-    const maxPossibleScore = (maxSubMatches * WEIGHT_SUBCAT) + ((techA.length + techB.length) * WEIGHT_DIFF);
-
-    // Min: No subcat match, All techs same (min len)
-    // If all techs same, diffCount = (lenA-min) + (lenB-min). 
-    // Wait, if A=['a'], B=['a'], same=1, diff=0. Score = -5.
-    // If A=['a','b'], B=['a'], same=1, diff=1. Score = 5 - 5 = 0.
-    // Min score occurs when overlap is maximized (penalty) and difference is minimized.
-    // Max overlap is min(lenA, lenB).
-    // In that case, sameCount = min(lenA, lenB).
-    // diffCount = max(lenA, lenB) - min(lenA, lenB) = abs(lenA - lenB).
-    const minTechSameCount = Math.min(techA.length, techB.length);
-    const minTechDiffCount = Math.abs(techA.length - techB.length);
-
-    const minPossibleScore = 0 + (minTechDiffCount * WEIGHT_DIFF) - (minTechSameCount * WEIGHT_SAME);
-
-    // Avoid division by zero
-    if (maxPossibleScore === minPossibleScore) return 0;
-
-    // Normalize
-    let normalized = ((rawScore - minPossibleScore) / (maxPossibleScore - minPossibleScore)) * 200 - 100;
-
-    // Clamp just in case
-    return Math.max(-100, Math.min(100, Math.round(normalized)));
+    // 4. Total Score (0 - 100)
+    return Math.round(scoreCategory + scoreSub + scoreTech);
 }
 
 /**
@@ -92,7 +67,6 @@ export function calculateSuitability(userA, userB) {
  * @returns {Array<Object>} - Sorted list of matches with score.
  */
 export function findBestMatch(targetUser, allUsers) {
-    const getList = (val) => Array.isArray(val) ? val : (val ? [val] : []);
     const targetCats = getList(targetUser.category || targetUser.categories);
 
     const results = allUsers

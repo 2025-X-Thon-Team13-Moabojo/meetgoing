@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { User, MapPin, Briefcase, Code, Clock, Save, X, GraduationCap, Award, Plus, Trash2, ChevronRight } from 'lucide-react';
+import { User, MapPin, Briefcase, Code, Clock, Save, X, GraduationCap, Award, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { jobCategories } from '../data/jobCategories';
 
 const ProfilePage = () => {
-    const { user, updateProfile } = useAuth();
+    const { user, updateProfile, isLoading } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState('basic'); // basic, skills, achievements
 
@@ -20,6 +20,7 @@ const ProfilePage = () => {
         availableTime: '',
         bio: '',
         school: '',
+        major: '',
         awards: []
     });
 
@@ -43,6 +44,7 @@ const ProfilePage = () => {
                 availableTime: user.availableTime || '',
                 bio: user.bio || '',
                 school: user.school || '',
+                major: user.major || '',
                 awards: user.awards || []
             });
         }
@@ -67,6 +69,7 @@ const ProfilePage = () => {
                 availableTime: user.availableTime || '',
                 bio: user.bio || '',
                 school: user.school || '',
+                major: user.major || '',
                 awards: user.awards || []
             });
         }
@@ -142,8 +145,12 @@ const ProfilePage = () => {
         }));
     };
 
-    if (!user) {
+    if (isLoading) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    }
+
+    if (!user) {
+        return <div className="min-h-screen flex items-center justify-center">Please log in to view profile.</div>;
     }
 
     return (
@@ -325,14 +332,31 @@ const ProfilePage = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">School / University</label>
-                                                <input
-                                                    type="text"
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
+                                                <select
                                                     value={profile.school}
                                                     onChange={(e) => setProfile({ ...profile, school: e.target.value })}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                    placeholder="e.g. Korea University"
-                                                />
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent mb-4"
+                                                >
+                                                    <option value="">Select School Level</option>
+                                                    <option value="Elementary School">Elementary School</option>
+                                                    <option value="Middle School">Middle School</option>
+                                                    <option value="High School">High School</option>
+                                                    <option value="University">University</option>
+                                                </select>
+
+                                                {profile.school === 'University' && (
+                                                    <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                                                        <label className="block text-sm font-medium text-gray-700 mb-1">Major</label>
+                                                        <input
+                                                            type="text"
+                                                            value={profile.major || ''}
+                                                            onChange={(e) => setProfile({ ...profile, major: e.target.value })}
+                                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                            placeholder="e.g. Computer Science"
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>

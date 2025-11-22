@@ -1,8 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, Send, Inbox } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const MatchesPage = () => {
+    const { user, isLoading } = useAuth();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('sent'); // 'sent' or 'received'
+
+    useEffect(() => {
+        if (!isLoading && !user) {
+            navigate('/login');
+        }
+    }, [user, isLoading, navigate]);
+
+    if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    if (!user) return null; // Prevent flashing content before redirect
 
     // Mock data
     const sentApplications = [
