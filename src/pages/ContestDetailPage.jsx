@@ -23,8 +23,6 @@ const ContestDetailPage = () => {
         navigate(`/teams/new?contestId=${contest.id}`);
     };
 
-
-
     if (!contest) {
         return <div className="text-center py-20">Contest not found</div>;
     }

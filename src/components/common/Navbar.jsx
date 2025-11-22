@@ -32,6 +32,16 @@ const Navbar = () => {
                         {/* Navigation Links */}
                         <div className="hidden md:flex items-center space-x-6">
                             <Link
+<<<<<<< HEAD
+=======
+                                to="/contests"
+                                className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/contests') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
+                                    }`}
+                            >
+                                공모전
+                            </Link>
+                            <Link
+>>>>>>> 0befbef76cfcc4c50d8a8bd4fbe3ac93ce05880a
                                 to="/teams"
                                 className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/teams') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
                                     }`}
@@ -46,6 +56,7 @@ const Navbar = () => {
                                 팀원 찾기
                             </Link>
                             <Link
+<<<<<<< HEAD
                                 to="/contests"
                                 className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/contests') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
                                     }`}
@@ -53,6 +64,8 @@ const Navbar = () => {
                                 공모전
                             </Link>
                             <Link
+=======
+>>>>>>> 0befbef76cfcc4c50d8a8bd4fbe3ac93ce05880a
                                 to="/chat"
                                 className={`text-sm font-medium transition-colors ${location.pathname.startsWith('/chat') ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
                                     }`}
