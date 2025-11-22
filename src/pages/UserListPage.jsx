@@ -19,16 +19,24 @@ const UserListPage = () => {
         const fetchUsers = async () => {
             try {
                 const querySnapshot = await getDocs(collection(db, 'users'));
-                const usersData = querySnapshot.docs.map(doc => ({
+                let usersData = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
-                // Sort by createdAt in JavaScript instead of Firestore
-                usersData.sort((a, b) => {
-                    const aTime = a.createdAt?.seconds || 0;
-                    const bTime = b.createdAt?.seconds || 0;
-                    return bTime - aTime;
-                });
+
+                // If current user is logged in and has profile data, use matching system
+                if (currentUser && (currentUser.category || currentUser.categories)) {
+                    const { findBestMatch } = await import('../utils/matchingSystem');
+                    usersData = findBestMatch(currentUser, usersData);
+                } else {
+                    // Default sort by createdAt
+                    usersData.sort((a, b) => {
+                        const aTime = a.createdAt?.seconds || 0;
+                        const bTime = b.createdAt?.seconds || 0;
+                        return bTime - aTime;
+                    });
+                }
+
                 setUsers(usersData);
             } catch (error) {
                 console.error('Error fetching users:', error);
@@ -39,7 +47,7 @@ const UserListPage = () => {
         };
 
         fetchUsers();
-    }, []);
+    }, [currentUser]); // Add currentUser as dependency
 
     // Extract all unique tech stacks for filter
     const allTechStacks = Array.from(

@@ -45,8 +45,20 @@ const UserCard = ({ user }) => {
         }
     };
 
+    const getScoreColor = (score) => {
+        if (score >= 70) return 'bg-green-100 text-green-800';
+        if (score >= 30) return 'bg-blue-100 text-blue-800';
+        if (score >= 0) return 'bg-gray-100 text-gray-800';
+        return 'bg-red-100 text-red-800';
+    };
+
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow relative">
+            {typeof user.score === 'number' && (
+                <div className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-xs font-medium ${getScoreColor(user.score)}`}>
+                    적합도 {user.score}점
+                </div>
+            )}
             <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
