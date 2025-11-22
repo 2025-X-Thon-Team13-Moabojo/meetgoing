@@ -1,165 +1,124 @@
-import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Calendar, Users, Trophy, ExternalLink, Share2, Flag } from 'lucide-react';
-import { contests } from '../data/contests';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { ArrowLeft } from 'lucide-react';
 
 const ContestDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
-    const contest = contests.find(c => c.id === parseInt(id));
-    const [activeTab, setActiveTab] = useState('overview');
+    const [contest, setContest] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const handleFindTeammates = (e) => {
-        e.preventDefault();
-        if (!isAuthenticated) {
-            alert('Please log in to find teammates.');
-            setTimeout(() => {
-                navigate('/login');
-            }, 0);
-            return;
-        }
-        navigate(`/teams/new?contestId=${contest.id}`);
-    };
+    useEffect(() => {
+        const fetchContest = async () => {
+            try {
+                const docRef = doc(db, 'contests', id);
+                const docSnap = await getDoc(docRef);
 
+                if (docSnap.exists()) {
+                    setContest(docSnap.data());
+                } else {
+                    console.log("No such document!");
+                }
+            } catch (error) {
+                console.error("Error fetching contest:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
+        fetchContest();
+    }, [id]);
 
-    if (!contest) {
-        return <div className="text-center py-20">Contest not found</div>;
-    }
+    if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    if (!contest) return <div className="flex justify-center items-center h-screen">Contest not found</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Hero Header */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="flex flex-col md:flex-row gap-8">
-                        <div className="w-full md:w-1/3">
-                            <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
-                                <img src={contest.image} alt={contest.title} className="w-full h-full object-cover" />
-                            </div>
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <header className="bg-white shadow-sm sticky top-0 z-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="mr-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                        <ArrowLeft className="w-6 h-6 text-gray-600" />
+                    </button>
+                    <h1 className="text-xl font-bold text-gray-900 truncate">{contest.title}</h1>
+                </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-8">
+                        {/* Left: Poster */}
+                        <div className="flex justify-center bg-gray-100 rounded-xl p-4">
+                            {contest.posterUrl ? (
+                                <img
+                                    src={contest.posterUrl}
+                                    alt={contest.title}
+                                    className="max-w-full h-auto max-h-[800px] object-contain rounded-lg shadow-sm"
+                                />
+                            ) : (
+                                <div className="w-full h-96 flex items-center justify-center text-gray-400">No Poster Available</div>
+                            )}
                         </div>
-                        <div className="w-full md:w-2/3 flex flex-col justify-between">
-                            <div>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-indigo-600">
-                                        {contest.dday}
-                                    </span>
-                                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                                        {contest.category}
-                                    </span>
-                                </div>
-                                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{contest.title}</h1>
-                                <p className="text-lg text-gray-600 mb-6">{contest.description}</p>
 
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
-                                    <div>
-                                        <div className="text-sm text-gray-500 mb-1">Host</div>
-                                        <div className="font-medium text-gray-900">{contest.host}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-sm text-gray-500 mb-1">Period</div>
-                                        <div className="font-medium text-gray-900">{contest.period}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-sm text-gray-500 mb-1">Target</div>
-                                        <div className="font-medium text-gray-900">{contest.target}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-sm text-gray-500 mb-1">Status</div>
-                                        <div className="font-medium text-indigo-600">{contest.status}</div>
-                                    </div>
+                        {/* Right: Info */}
+                        <div className="space-y-6">
+                            <div>
+                                <span className="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full mb-2">
+                                    {contest.category}
+                                </span>
+                                <h2 className="text-3xl font-bold text-gray-900 mb-4">{contest.title}</h2>
+                                <div className="flex items-center space-x-4 mb-6">
+                                    <span className="bg-orange-100 text-orange-800 font-bold px-3 py-1 rounded-lg">
+                                        {contest.dDay}
+                                    </span>
+                                    <span className="text-gray-600 font-medium">
+                                        {contest.condition}
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-4">
-                                <button
-                                    onClick={handleFindTeammates}
-                                    className="flex-1 sm:flex-none inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all"
+                            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">상세 정보</h3>
+                                <div className="space-y-3">
+                                    {contest.infoTable && Object.entries(contest.infoTable).map(([key, value]) => (
+                                        <div key={key} className="flex flex-col sm:flex-row sm:items-start border-b border-gray-200 last:border-0 pb-3 last:pb-0">
+                                            <span className="w-32 font-medium text-gray-500 shrink-0">{key}</span>
+                                            <span className="text-gray-900 flex-1 break-words">{value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="pt-4">
+                                <a
+                                    href={contest.originalLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg"
                                 >
-                                    <Users className="w-5 h-5 mr-2" />
-                                    Find Teammates
-                                </button>
-                                <button className="flex-1 sm:flex-none inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition-all">
-                                    <ExternalLink className="w-5 h-5 mr-2" />
-                                    Official Site
-                                </button>
-                                <button className="p-3 border border-gray-300 rounded-xl text-gray-500 hover:bg-gray-50">
-                                    <Share2 className="w-5 h-5" />
-                                </button>
+                                    원문 보러가기 (콘테스트코리아)
+                                </a>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Content Tabs */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex space-x-8 border-b border-gray-200 mb-8">
-                    {['overview', 'teams', 'participants'].map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`pb-4 text-sm font-medium capitalize transition-colors relative ${activeTab === tab
-                                ? 'text-indigo-600'
-                                : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                        >
-                            {tab}
-                            {activeTab === tab && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full"></div>
-                            )}
-                        </button>
-                    ))}
-                </div>
-
-                <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 min-h-[400px]">
-                    {activeTab === 'overview' && (
-                        <div className="prose max-w-none">
-                            <h3>Detailed Information</h3>
-                            <p>
-                                This is a placeholder for detailed contest information. In a real application,
-                                this would contain the full description, rules, prizes, and other important details
-                                fetched from the backend or scraped data.
-                            </p>
-                            <div className="mt-8 p-6 bg-gray-50 rounded-xl">
-                                <h4 className="flex items-center text-gray-900 font-bold mb-4">
-                                    <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
-                                    Awards & Prizes
-                                </h4>
-                                <ul className="space-y-2 text-gray-600">
-                                    <li>Grand Prize: 10,000,000 KRW</li>
-                                    <li>Gold Prize: 5,000,000 KRW</li>
-                                    <li>Silver Prize: 3,000,000 KRW</li>
-                                </ul>
-                            </div>
-                        </div>
-                    )}
-                    {activeTab === 'teams' && (
-                        <div className="text-center py-12">
-                            <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900">No teams yet</h3>
-                            <p className="text-gray-500 mb-6">Be the first to create a team for this contest!</p>
-                            <Link
-                                to={`/teams/new?contestId=${contest.id}`}
-                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700"
-                            >
-                                Create Team
-                            </Link>
-                        </div>
-                    )}
-                    {activeTab === 'participants' && (
-                        <div className="text-center py-12">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
-                                <Users className="w-6 h-6 text-gray-400" />
-                            </div>
-                            <h3 className="text-lg font-medium text-gray-900">Looking for participants?</h3>
-                            <p className="text-gray-500">Join a team or create one to start collaborating.</p>
+                    {/* Bottom: Full Content */}
+                    {contest.contentHtml && (
+                        <div className="border-t border-gray-200 p-6 lg:p-8">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-6">상세 요강</h3>
+                            <div
+                                className="prose max-w-none prose-img:rounded-xl prose-a:text-blue-600 prose-headings:text-gray-900"
+                                dangerouslySetInnerHTML={{ __html: contest.contentHtml }}
+                            />
                         </div>
                     )}
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

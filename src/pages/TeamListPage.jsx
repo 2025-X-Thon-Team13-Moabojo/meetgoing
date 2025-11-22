@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import TeamRecruitCard from '../components/features/TeamRecruitCard';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -9,6 +9,8 @@ const TeamListPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [teams, setTeams] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchParams] = useSearchParams();
+    const applyTeamId = searchParams.get('applyTeam');
 
     // Fetch teams from Firebase
     useEffect(() => {
@@ -87,7 +89,11 @@ const TeamListPage = () => {
                 ) : filteredTeams.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredTeams.map(team => (
-                            <TeamRecruitCard key={team.id} team={team} />
+                            <TeamRecruitCard
+                                key={team.id}
+                                team={team}
+                                defaultOpenApply={team.id === applyTeamId}
+                            />
                         ))}
                     </div>
                 ) : (
