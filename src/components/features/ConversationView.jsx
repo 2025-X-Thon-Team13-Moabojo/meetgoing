@@ -7,7 +7,7 @@ import { sendMessage, subscribeToMessages, acceptApplication, leaveConversation,
 import { useNavigate } from 'react-router-dom';
 import ReviewModal from './ReviewModal';
 
-const ConversationView = ({ conversation }) => {
+const ConversationView = ({ conversation, headerActions }) => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
@@ -255,6 +255,7 @@ const ConversationView = ({ conversation }) => {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
+                    {headerActions}
                     {conversation.isGroup && (
                         <>
                             {/* Review Button - Show if deadline passed (simulated logic for now or real date check) */}

@@ -39,7 +39,8 @@ const ProfilePage = () => {
         awards: [],
         themeColor: 'from-indigo-500 to-purple-600', // Default theme
         avatar: '',
-        reputation: 50 // Default reputation
+        reputation: 50, // Default reputation
+        reputationKeywords: {}
     });
 
     const [uploading, setUploading] = useState(false);
@@ -72,7 +73,8 @@ const ProfilePage = () => {
                         awards: currentUser.awards || [],
                         themeColor: currentUser.themeColor || 'from-indigo-500 to-purple-600',
                         avatar: currentUser.avatar || CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)],
-                        reputation: currentUser.reputation || 50
+                        reputation: currentUser.reputation || 50,
+                        reputationKeywords: currentUser.reputationKeywords || {}
                     });
                 }
             } else {
@@ -97,7 +99,8 @@ const ProfilePage = () => {
                             awards: userData.awards || [],
                             themeColor: userData.themeColor || 'from-indigo-500 to-purple-600',
                             avatar: userData.avatar || CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)],
-                            reputation: userData.reputation || 50
+                            reputation: userData.reputation || 50,
+                            reputationKeywords: userData.reputationKeywords || {}
                         });
                     } else {
                         console.log("No such user!");
@@ -142,7 +145,8 @@ const ProfilePage = () => {
                 awards: user.awards || [],
                 themeColor: user.themeColor || 'from-indigo-500 to-purple-600',
                 avatar: user.avatar || '',
-                reputation: user.reputation || 50
+                reputation: user.reputation || 50,
+                reputationKeywords: user.reputationKeywords || {}
             });
         }
         setIsEditing(false);
@@ -803,27 +807,42 @@ const ProfilePage = () => {
                                         <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4 flex items-center">
                                             <Zap className="w-4 h-4 mr-2 text-yellow-500" /> Reputation
                                         </h3>
-                                        <div className="relative pt-1">
-                                            <div className="flex mb-2 items-center justify-between">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white ${getReputationColor(profile.reputation || 50)}`}>
+                                                    {profile.reputation || 50}
+                                                </div>
                                                 <div>
-                                                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-gray-600 bg-gray-200">
-                                                        Energy
-                                                    </span>
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="text-xs font-semibold inline-block text-gray-600">
-                                                        {profile.reputation}%
-                                                    </span>
+                                                    <p className="text-sm text-gray-500">Total Score</p>
+                                                    <p className="font-medium text-gray-900">
+                                                        {(profile.reputation || 50) >= 80 ? 'Excellent' : (profile.reputation || 50) >= 40 ? 'Good' : 'Needs Improvement'}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
-                                                <div style={{ width: `${Math.min(100, Math.max(0, profile.reputation))}%` }} className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${getReputationColor(profile.reputation)} transition-all duration-500`}></div>
-                                            </div>
-                                            <p className="text-xs text-gray-500 text-center">
-                                                {profile.reputation >= 80 ? '신뢰할 수 있는 팀원입니다!' :
-                                                    profile.reputation >= 40 ? '성장하고 있는 팀원입니다.' :
-                                                        '주의가 필요한 상태입니다.'}
-                                            </p>
+                                        </div>
+
+                                        {/* Keywords Stats */}
+                                        <div className="space-y-3">
+                                            {profile.reputationKeywords && Object.keys(profile.reputationKeywords).length > 0 ? (
+                                                Object.entries(profile.reputationKeywords)
+                                                    .sort(([, a], [, b]) => b - a)
+                                                    .map(([keyword, count]) => (
+                                                        <div key={keyword} className="flex items-center justify-between text-sm">
+                                                            <span className="text-gray-600">{keyword}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                                    <div
+                                                                        className="h-full bg-indigo-500 rounded-full"
+                                                                        style={{ width: `${Math.min((count / 10) * 100, 100)}%` }}
+                                                                    ></div>
+                                                                </div>
+                                                                <span className="font-medium text-gray-900 w-4 text-right">{count}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                            ) : (
+                                                <p className="text-sm text-gray-400 text-center py-2">No reputation keywords yet.</p>
+                                            )}
                                         </div>
                                     </div>
 
@@ -841,22 +860,21 @@ const ProfilePage = () => {
                                                 <Briefcase className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                                                 <div>
                                                     <p className="text-sm font-medium text-gray-900">Role & Field</p>
-                                                    <p className="text-sm text-gray-600">{profile.role}</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">{profile.subCategory}</p>
+                                                    <p className="text-sm text-gray-600">{profile.roles.join(', ') || "Not specified"}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start">
                                                 <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                                                 <div>
                                                     <p className="text-sm font-medium text-gray-900">Location</p>
-                                                    <p className="text-sm text-gray-600">{profile.region}</p>
+                                                    <p className="text-sm text-gray-600">{profile.region || "Not specified"}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start">
                                                 <Clock className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                                                 <div>
                                                     <p className="text-sm font-medium text-gray-900">Availability</p>
-                                                    <p className="text-sm text-gray-600">{profile.availableTime}</p>
+                                                    <p className="text-sm text-gray-600">{profile.availableTime || "Not specified"}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -867,7 +885,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

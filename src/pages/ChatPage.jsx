@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { subscribeToConversations } from '../utils/messageService';
+import { subscribeToConversations, sendMessage } from '../utils/messageService';
 import ConversationView from '../components/features/ConversationView';
+import ReputationModal from '../components/features/ReputationModal';
 
 const ChatPage = () => {
     const { user } = useAuth();
@@ -10,6 +11,9 @@ const ChatPage = () => {
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showReputationModal, setShowReputationModal] = useState(false);
+    const [reputationTarget, setReputationTarget] = useState(null);
+    const [demoTeamId, setDemoTeamId] = useState(null);
 
     // Get conversation ID from URL if exists
     const conversationIdFromUrl = searchParams.get('conversationId');
@@ -43,7 +47,48 @@ const ChatPage = () => {
 
     const getOtherParticipant = (conversation) => {
         const otherParticipantId = conversation.participants.find(id => id !== user.uid);
-        return conversation.participantDetails[otherParticipantId];
+        return conversation.participantDetails?.[otherParticipantId] || {};
+    };
+
+    const handleInjectDemo = async () => {
+        const { injectDemoData } = await import('../utils/demoData');
+        const result = await injectDemoData(user?.uid);
+        if (result.success) {
+            alert('Demo data injected! Check the new group chat.');
+            setDemoTeamId(result.teamId);
+            // Optionally switch to the new conversation
+            if (result.conversationId) {
+                const newConv = conversations.find(c => c.id === result.conversationId);
+                if (newConv) setSelectedConversation(newConv);
+            }
+        } else {
+            alert('Failed to inject demo data.');
+        }
+    };
+
+    const handleTriggerContestEnd = async () => {
+        if (!selectedConversation || !selectedConversation.isGroup) {
+            alert('Please select a group chat first.');
+            return;
+        }
+
+        // Send system message
+        await sendMessage(
+            selectedConversation.id,
+            'system',
+            null,
+            '🏆 공모전이 종료되었습니다! 고생한 팀원들을 평가해주세요.',
+            'system'
+        );
+
+        // Simulate opening the modal for a teammate (not self)
+        const teammates = selectedConversation.participants.filter(p => p !== user.uid);
+        if (teammates.length > 0) {
+            const targetId = teammates[0];
+            const targetData = selectedConversation.participantDetails?.[targetId] || { name: 'Teammate', id: targetId };
+            setReputationTarget({ id: targetId, ...targetData });
+            setShowReputationModal(true);
+        }
     };
 
     if (!user) {
@@ -57,12 +102,18 @@ const ChatPage = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-64px)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-80px)]">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden h-full flex">
                 {/* Conversation List */}
                 <div className="w-80 border-r border-gray-200 flex flex-col">
-                    <div className="p-4 border-b border-gray-200">
+                    <div className="p-4 border-b border-gray-200 flex justify-between items-center">
                         <h2 className="text-lg font-bold text-gray-900">메시지</h2>
+                        <button
+                            onClick={handleInjectDemo}
+                            className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded hover:bg-gray-200"
+                        >
+                            Demo Data
+                        </button>
                     </div>
                     <div className="flex-1 overflow-y-auto">
                         {loading ? (
@@ -77,11 +128,10 @@ const ChatPage = () => {
 
                                 if (conversation.isGroup) {
                                     name = conversation.name;
-                                    // Use a placeholder or team icon for group chats
                                     avatar = null;
                                 } else {
                                     const otherParticipant = getOtherParticipant(conversation);
-                                    name = otherParticipant.name;
+                                    name = otherParticipant.name || 'Unknown';
                                     avatar = otherParticipant.avatar;
                                 }
 
@@ -94,7 +144,7 @@ const ChatPage = () => {
                                     >
                                         {conversation.isGroup ? (
                                             <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold flex-shrink-0">
-                                                {name[0]}
+                                                {name?.[0] || 'G'}
                                             </div>
                                         ) : (
                                             <img
@@ -129,7 +179,21 @@ const ChatPage = () => {
                 {/* Chat Room */}
                 <div className="flex-1 flex flex-col bg-gray-50">
                     {selectedConversation ? (
-                        <ConversationView conversation={selectedConversation} />
+                        <>
+                            {/* Messages */}
+                            <ConversationView
+                                conversation={selectedConversation}
+                                currentUser={user}
+                                headerActions={
+                                    <button
+                                        onClick={handleTriggerContestEnd}
+                                        className="px-3 py-1 bg-indigo-100 text-indigo-600 text-xs rounded hover:bg-indigo-200 font-bold whitespace-nowrap"
+                                    >
+                                        Simulate Contest End
+                                    </button>
+                                }
+                            />
+                        </>
                     ) : (
                         <div className="flex-1 flex items-center justify-center text-gray-500">
                             대화를 선택해주세요
@@ -137,9 +201,21 @@ const ChatPage = () => {
                     )}
                 </div>
             </div>
+
+            {/* Reputation Modal */}
+            {showReputationModal && reputationTarget && (
+                <ReputationModal
+                    isOpen={showReputationModal}
+                    onClose={() => setShowReputationModal(false)}
+                    targetUser={reputationTarget}
+                    currentUser={user}
+                    onComplete={() => {
+                        alert('평가가 완료되었습니다!');
+                    }}
+                />
+            )}
         </div>
     );
 };
 
 export default ChatPage;
-
