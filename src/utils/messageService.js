@@ -325,6 +325,15 @@ const ensureGroupChat = async (teamId, teamData, newMemberId, newMemberRole, new
 
         if (Object.keys(updates).length > 0) {
             await updateDoc(doc(db, 'conversations', groupChatId), updates);
+
+            // Send system message about new member
+            await sendMessage(
+                groupChatId,
+                'system',
+                null,
+                `${newMemberData.name}님이 팀에 합류했습니다.`,
+                'system'
+            );
         }
     } else {
         // Create new group chat
@@ -369,7 +378,16 @@ const ensureGroupChat = async (teamId, teamData, newMemberId, newMemberRole, new
             updatedAt: serverTimestamp()
         };
 
-        await addDoc(conversationsRef, newConversation);
+        const docRef = await addDoc(conversationsRef, newConversation);
+
+        // Send system message about new member (the 3rd one)
+        await sendMessage(
+            docRef.id,
+            'system',
+            null,
+            `${newMemberData.name}님이 팀에 합류했습니다.`,
+            'system'
+        );
     }
 };
 

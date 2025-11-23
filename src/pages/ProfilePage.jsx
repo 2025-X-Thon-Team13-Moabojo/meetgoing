@@ -222,6 +222,9 @@ const ProfilePage = () => {
 
             setProfile(prev => ({ ...prev, avatar: downloadURL }));
             setViewUser(prev => ({ ...prev, avatar: downloadURL })); // Immediate preview
+
+            // Update Firestore immediately
+            await updateProfile({ avatar: downloadURL });
         } catch (error) {
             console.error("Error uploading avatar:", error);
             alert("Failed to upload image.");

@@ -243,7 +243,7 @@ const ConversationView = ({ conversation }) => {
                             <p className="text-xs text-gray-500">
                                 {conversation.isGroup ? `${conversation.participants.length}명 참여 중` : '온라인'}
                             </p>
-                            {conversation.isGroup && conversation.participants.length >= 3 && contestEndDate && (
+                            {conversation.isGroup && contestEndDate && (
                                 <span className="flex items-center text-xs font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
                                     <Calendar className="w-3 h-3 mr-1" />
                                     마감: {contestEndDate}
