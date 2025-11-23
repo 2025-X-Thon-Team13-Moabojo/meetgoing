@@ -71,7 +71,7 @@ const Navbar = () => {
                                     className="flex items-center space-x-2 focus:outline-none"
                                 >
                                     <img
-                                        src={user?.avatar || "https://via.placeholder.com/40"}
+                                        src={user?.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(user?.name || 'User')}`}
                                         alt={user?.name}
                                         className="w-8 h-8 rounded-full object-cover border border-gray-200"
                                     />
