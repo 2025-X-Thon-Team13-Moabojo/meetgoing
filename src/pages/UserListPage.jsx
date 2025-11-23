@@ -56,10 +56,15 @@ const UserListPage = () => {
                         .slice(0, 4);
                     setRecommendedUsers(recommendations);
                 } else {
-                    // Default sort by createdAt (mock users might not have it, so handle gracefully)
+                    // Default sort by createdAt
                     combinedUsers.sort((a, b) => {
-                        const aTime = a.createdAt?.seconds || 0;
-                        const bTime = b.createdAt?.seconds || 0;
+                        const getTime = (date) => {
+                            if (!date) return 0;
+                            if (date.seconds) return date.seconds * 1000; // Firestore Timestamp
+                            return new Date(date).getTime(); // String or Date object
+                        };
+                        const aTime = getTime(a.createdAt);
+                        const bTime = getTime(b.createdAt);
                         return bTime - aTime;
                     });
                     setUsers(combinedUsers);
@@ -209,7 +214,7 @@ const UserListPage = () => {
                             <p className="text-gray-500 text-lg">
                                 {searchTerm || selectedCategory || selectedTech
                                     ? '조건에 맞는 사용자가 없습니다.'
-                                    : '등록된 사용자가 없습니다.'}
+                                    : '아직 다른 사용자가 없습니다. 친구를 초대해보세요!'}
                             </p>
                             {(searchTerm || selectedCategory || selectedTech) && (
                                 <button

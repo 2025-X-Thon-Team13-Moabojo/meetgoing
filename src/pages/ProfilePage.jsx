@@ -8,6 +8,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase';
 import { Camera, Palette } from 'lucide-react';
+import { compressImage } from '../utils/imageUtils';
 
 const ProfilePage = () => {
     const { user: currentUser, updateProfile, isLoading: authLoading } = useAuth();
@@ -16,6 +17,7 @@ const ProfilePage = () => {
     const [activeTab, setActiveTab] = useState('basic'); // basic, skills, achievements
     const [viewUser, setViewUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const CUTE_EMOJIS = ['🐣', '🐱', '🐶', '🐰', '🐼', '🐻', '🦊', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🦄'];
 
     // Determine if we are viewing our own profile or someone else's
     const isOwnProfile = !userId || (currentUser && userId === currentUser.uid);
@@ -69,7 +71,7 @@ const ProfilePage = () => {
                         major: currentUser.major || '',
                         awards: currentUser.awards || [],
                         themeColor: currentUser.themeColor || 'from-indigo-500 to-purple-600',
-                        avatar: currentUser.avatar || '',
+                        avatar: currentUser.avatar || CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)],
                         reputation: currentUser.reputation || 50
                     });
                 }
@@ -94,7 +96,7 @@ const ProfilePage = () => {
                             major: userData.major || '',
                             awards: userData.awards || [],
                             themeColor: userData.themeColor || 'from-indigo-500 to-purple-600',
-                            avatar: userData.avatar || '',
+                            avatar: userData.avatar || CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)],
                             reputation: userData.reputation || 50
                         });
                     } else {
@@ -215,27 +217,10 @@ const ProfilePage = () => {
         }));
     };
 
-    const handleAvatarChange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        setUploading(true);
-        try {
-            const storageRef = ref(storage, `avatars/${currentUser.uid}_${Date.now()}`);
-            await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(storageRef);
-
-            setProfile(prev => ({ ...prev, avatar: downloadURL }));
-            setViewUser(prev => ({ ...prev, avatar: downloadURL })); // Immediate preview
-
-            // Update Firestore immediately
-            await updateProfile({ avatar: downloadURL });
-        } catch (error) {
-            console.error("Error uploading avatar:", error);
-            alert("Failed to upload image.");
-        } finally {
-            setUploading(false);
-        }
+    const handleAvatarClick = () => {
+        if (!isEditing) return;
+        const randomEmoji = CUTE_EMOJIS[Math.floor(Math.random() * CUTE_EMOJIS.length)];
+        setProfile(prev => ({ ...prev, avatar: randomEmoji }));
     };
 
     const THEME_PRESETS = [
@@ -261,8 +246,17 @@ const ProfilePage = () => {
         if (inputs.awardImage) {
             setUploading(true);
             try {
+                let fileToUpload = inputs.awardImage;
+                if (inputs.awardImage.type.startsWith('image/')) {
+                    try {
+                        fileToUpload = await compressImage(inputs.awardImage, 1200, 0.8);
+                    } catch (e) {
+                        console.warn("Compression failed, using original", e);
+                    }
+                }
+
                 const storageRef = ref(storage, `achievements/${currentUser.uid}_${Date.now()}`);
-                await uploadBytes(storageRef, inputs.awardImage);
+                await uploadBytes(storageRef, fileToUpload);
                 const downloadURL = await getDownloadURL(storageRef);
 
                 awardData = {
@@ -304,40 +298,27 @@ const ProfilePage = () => {
                         <div className="relative flex justify-between items-end -mt-12 mb-6">
                             <div className="flex items-end">
                                 <div className="relative group">
-                                    <img
-                                        src={profile.avatar || viewUser.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(profile.name || viewUser.name || 'User')}`}
-                                        alt="Profile"
-                                        className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg object-cover bg-white"
-                                    />
+                                    {(profile.avatar || viewUser.avatar || '').startsWith('http') ? (
+                                        <img
+                                            src={profile.avatar || viewUser.avatar}
+                                            alt="Profile"
+                                            className={`w-24 h-24 rounded-2xl border-4 border-white shadow-lg object-cover bg-white ${isEditing ? 'cursor-pointer group-hover:opacity-75' : ''}`}
+                                            onClick={isEditing ? handleAvatarClick : undefined}
+                                        />
+                                    ) : (
+                                        <div
+                                            className={`w-24 h-24 rounded-2xl border-4 border-white shadow-lg bg-indigo-100 flex items-center justify-center text-4xl ${isEditing ? 'cursor-pointer group-hover:opacity-75' : ''}`}
+                                            onClick={isEditing ? handleAvatarClick : undefined}
+                                        >
+                                            {profile.avatar || viewUser.avatar || '🐣'}
+                                        </div>
+                                    )}
                                     {isEditing && (
-                                        <>
-                                            <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-2xl cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                <Camera className="w-8 h-8 text-white" />
-                                                <input
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept="image/*"
-                                                    onChange={handleAvatarChange}
-                                                    disabled={uploading}
-                                                />
-                                            </label>
-                                            {profile.avatar && (
-                                                <button
-                                                    onClick={async (e) => {
-                                                        e.stopPropagation();
-                                                        if (confirm('프로필 사진을 삭제하시겠습니까?')) {
-                                                            setProfile(prev => ({ ...prev, avatar: '' }));
-                                                            setViewUser(prev => ({ ...prev, avatar: '' }));
-                                                            await updateProfile({ avatar: '' });
-                                                        }
-                                                    }}
-                                                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full shadow-md z-20 hover:bg-red-600 transition-colors"
-                                                    title="사진 삭제"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            )}
-                                        </>
+                                        <div
+                                            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer pointer-events-none"
+                                        >
+                                            <span className="text-xs font-bold text-white bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">Change</span>
+                                        </div>
                                     )}
                                 </div>
                                 <div className="ml-6 mb-2">

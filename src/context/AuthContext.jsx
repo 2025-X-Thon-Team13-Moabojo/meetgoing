@@ -6,7 +6,7 @@ import {
     signOut,
     updateProfile as updateFirebaseProfile
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
 const AuthContext = createContext(null);
@@ -22,33 +22,58 @@ export const AuthProvider = ({ children }) => {
             return;
         }
 
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        let unsubscribeFirestore = null;
+
+        const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 try {
-                    // Fetch additional user data from Firestore
+                    // Subscribe to user data in Firestore
                     const userDocRef = doc(db, "users", firebaseUser.uid);
-                    const userDoc = await getDoc(userDocRef);
 
-                    if (userDoc.exists()) {
-                        setUser({ ...firebaseUser, ...userDoc.data() });
-                    } else {
-                        // Fallback if firestore doc doesn't exist yet
-                        setUser(firebaseUser);
+                    // Unsubscribe from previous listener if exists
+                    if (unsubscribeFirestore) {
+                        unsubscribeFirestore();
                     }
-                    setIsAuthenticated(true);
+
+                    unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            setUser({ ...firebaseUser, ...docSnap.data() });
+                        } else {
+                            // Fallback if firestore doc doesn't exist yet (e.g. during signup before setDoc)
+                            setUser(firebaseUser);
+                        }
+                        setIsAuthenticated(true);
+                        setIsLoading(false);
+                    }, (error) => {
+                        console.error("Error fetching user data:", error);
+                        setUser(null);
+                        setIsAuthenticated(false);
+                        setIsLoading(false);
+                    });
+
                 } catch (error) {
-                    console.error("Error fetching user data:", error);
+                    console.error("Error setting up user listener:", error);
                     setUser(null);
                     setIsAuthenticated(false);
+                    setIsLoading(false);
                 }
             } else {
+                if (unsubscribeFirestore) {
+                    unsubscribeFirestore();
+                    unsubscribeFirestore = null;
+                }
                 setUser(null);
                 setIsAuthenticated(false);
+                setIsLoading(false);
             }
-            setIsLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeFirestore) {
+                unsubscribeFirestore();
+            }
+        };
     }, []);
 
     if (!auth) {
