@@ -2,6 +2,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+import { getStorage } from "firebase/storage";
+
 // Your web app's Firebase configuration
 // For Vite, use import.meta.env.VITE_*
 const firebaseConfig = {
@@ -16,6 +18,7 @@ const firebaseConfig = {
 let app;
 let auth;
 let db;
+let storage;
 
 if (!firebaseConfig.apiKey) {
     console.error("Firebase configuration is missing! Make sure you have created a .env file with your VITE_FIREBASE_* keys.");
@@ -24,10 +27,11 @@ if (!firebaseConfig.apiKey) {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app);
+        storage = getStorage(app);
     } catch (error) {
         console.error("Error initializing Firebase:", error);
     }
 }
 
-export { auth, db };
+export { auth, db, storage };
 export default app;

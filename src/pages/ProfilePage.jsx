@@ -5,7 +5,9 @@ import { jobCategories } from '../data/jobCategories';
 import { REGIONS } from '../utils/domainData';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
+import { Camera, Palette } from 'lucide-react';
 
 const ProfilePage = () => {
     const { user: currentUser, updateProfile, isLoading: authLoading } = useAuth();
@@ -32,13 +34,18 @@ const ProfilePage = () => {
         bio: '',
         school: '',
         major: '',
-        awards: []
+        awards: [],
+        themeColor: 'from-indigo-500 to-purple-600', // Default theme
+        avatar: ''
     });
+
+    const [uploading, setUploading] = useState(false);
 
     const [inputs, setInputs] = useState({
         techStack: '',
         interests: '',
-        awards: ''
+        awards: '',
+        awardImage: null // File object
     });
 
     useEffect(() => {
@@ -59,7 +66,9 @@ const ProfilePage = () => {
                         bio: currentUser.bio || '',
                         school: currentUser.school || '',
                         major: currentUser.major || '',
-                        awards: currentUser.awards || []
+                        awards: currentUser.awards || [],
+                        themeColor: currentUser.themeColor || 'from-indigo-500 to-purple-600',
+                        avatar: currentUser.avatar || ''
                     });
                 }
             } else {
@@ -81,7 +90,9 @@ const ProfilePage = () => {
                             bio: userData.bio || '',
                             school: userData.school || '',
                             major: userData.major || '',
-                            awards: userData.awards || []
+                            awards: userData.awards || [],
+                            themeColor: userData.themeColor || 'from-indigo-500 to-purple-600',
+                            avatar: userData.avatar || ''
                         });
                     } else {
                         console.log("No such user!");
@@ -118,7 +129,9 @@ const ProfilePage = () => {
                 bio: user.bio || '',
                 school: user.school || '',
                 major: user.major || '',
-                awards: user.awards || []
+                awards: user.awards || [],
+                themeColor: user.themeColor || 'from-indigo-500 to-purple-600',
+                avatar: user.avatar || ''
             });
         }
         setIsEditing(false);
@@ -193,6 +206,68 @@ const ProfilePage = () => {
         }));
     };
 
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const storageRef = ref(storage, `avatars/${currentUser.uid}_${Date.now()}`);
+            await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(storageRef);
+
+            setProfile(prev => ({ ...prev, avatar: downloadURL }));
+            setViewUser(prev => ({ ...prev, avatar: downloadURL })); // Immediate preview
+        } catch (error) {
+            console.error("Error uploading avatar:", error);
+            alert("Failed to upload image.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const THEME_PRESETS = [
+        { name: 'Indigo Purple', value: 'from-indigo-500 to-purple-600' },
+        { name: 'Blue Cyan', value: 'from-blue-500 to-cyan-500' },
+        { name: 'Rose Pink', value: 'from-rose-500 to-pink-500' },
+        { name: 'Emerald Teal', value: 'from-emerald-500 to-teal-500' },
+        { name: 'Amber Orange', value: 'from-amber-500 to-orange-500' },
+        { name: 'Slate Gray', value: 'from-slate-700 to-slate-900' },
+    ];
+
+    const handleAddAchievement = async () => {
+        if (!inputs.awards.trim()) return;
+
+        let awardData = inputs.awards.trim();
+
+        if (inputs.awardImage) {
+            setUploading(true);
+            try {
+                const storageRef = ref(storage, `achievements/${currentUser.uid}_${Date.now()}`);
+                await uploadBytes(storageRef, inputs.awardImage);
+                const downloadURL = await getDownloadURL(storageRef);
+
+                awardData = {
+                    title: inputs.awards.trim(),
+                    image: downloadURL
+                };
+            } catch (error) {
+                console.error("Error uploading achievement image:", error);
+                alert("Failed to upload image.");
+                setUploading(false);
+                return;
+            } finally {
+                setUploading(false);
+            }
+        }
+
+        setProfile(prev => ({
+            ...prev,
+            awards: [...prev.awards, awardData]
+        }));
+        setInputs(prev => ({ ...prev, awards: '', awardImage: null }));
+    };
+
     if (loading || authLoading) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
@@ -206,15 +281,29 @@ const ProfilePage = () => {
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Profile Header */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-                    <div className="h-32 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+                    <div className={`h-32 bg-gradient-to-r ${profile.themeColor}`}></div>
                     <div className="px-8 pb-8">
                         <div className="relative flex justify-between items-end -mt-12 mb-6">
                             <div className="flex items-end">
-                                <img
-                                    src={viewUser.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150"}
-                                    alt="Profile"
-                                    className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg object-cover"
-                                />
+                                <div className="relative group">
+                                    <img
+                                        src={profile.avatar || viewUser.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150"}
+                                        alt="Profile"
+                                        className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg object-cover bg-white"
+                                    />
+                                    {isEditing && (
+                                        <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-2xl cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Camera className="w-8 h-8 text-white" />
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={handleAvatarChange}
+                                                disabled={uploading}
+                                            />
+                                        </label>
+                                    )}
+                                </div>
                                 <div className="ml-6 mb-2">
                                     <h1 className="text-2xl font-bold text-gray-900">{profile.name}</h1>
                                     <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -276,6 +365,24 @@ const ProfilePage = () => {
                                                     onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                                 />
+                                            </div>
+
+                                            {/* Theme Color Picker */}
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                                    <Palette className="w-4 h-4 mr-2" /> Theme Color
+                                                </label>
+                                                <div className="flex flex-wrap gap-3">
+                                                    {THEME_PRESETS.map((theme) => (
+                                                        <button
+                                                            key={theme.name}
+                                                            onClick={() => setProfile({ ...profile, themeColor: theme.value })}
+                                                            className={`w-12 h-12 rounded-full bg-gradient-to-r ${theme.value} ring-2 ring-offset-2 transition-all ${profile.themeColor === theme.value ? 'ring-indigo-600 scale-110' : 'ring-transparent hover:scale-105'
+                                                                }`}
+                                                            title={theme.name}
+                                                        />
+                                                    ))}
+                                                </div>
                                             </div>
 
                                             {/* Category, Sub-field, Role Multi-Select */}
@@ -527,9 +634,17 @@ const ProfilePage = () => {
                                             <div className="space-y-3 mb-4">
                                                 {profile.awards.map((award, index) => (
                                                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                                        <div className="flex items-center">
-                                                            <Award className="w-5 h-5 text-yellow-500 mr-3" />
-                                                            <span className="text-gray-900">{award}</span>
+                                                        <div className="flex items-center gap-3">
+                                                            {typeof award === 'object' && award.image ? (
+                                                                <img src={award.image} alt={award.title} className="w-10 h-10 rounded-lg object-cover border border-gray-200" />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center text-yellow-600">
+                                                                    <Award className="w-5 h-5" />
+                                                                </div>
+                                                            )}
+                                                            <span className="text-gray-900 font-medium">
+                                                                {typeof award === 'object' ? award.title : award}
+                                                            </span>
                                                         </div>
                                                         <button
                                                             onClick={() => handleRemoveItem('awards', index)}
@@ -540,30 +655,49 @@ const ProfilePage = () => {
                                                     </div>
                                                 ))}
                                             </div>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Add an award or certification"
-                                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                    value={inputs.awards}
-                                                    onChange={(e) => setInputs({ ...inputs, awards: e.target.value })}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-                                                            e.preventDefault();
-                                                            handleAddItem('awards', inputs.awards);
-                                                            setInputs(prev => ({ ...prev, awards: '' }));
-                                                        }
-                                                    }}
-                                                />
-                                                <button
-                                                    onClick={() => {
-                                                        handleAddItem('awards', inputs.awards);
-                                                        setInputs(prev => ({ ...prev, awards: '' }));
-                                                    }}
-                                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                                                >
-                                                    Add
-                                                </button>
+                                            <div className="flex flex-col gap-2">
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Add an award or certification"
+                                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                        value={inputs.awards}
+                                                        onChange={(e) => setInputs({ ...inputs, awards: e.target.value })}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                                                                e.preventDefault();
+                                                                handleAddAchievement();
+                                                            }
+                                                        }}
+                                                    />
+                                                    <label className={`flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${inputs.awardImage ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'text-gray-500'}`}>
+                                                        <Camera className="w-5 h-5" />
+                                                        <input
+                                                            type="file"
+                                                            className="hidden"
+                                                            accept="image/*"
+                                                            onChange={(e) => setInputs({ ...inputs, awardImage: e.target.files[0] })}
+                                                        />
+                                                    </label>
+                                                    <button
+                                                        onClick={handleAddAchievement}
+                                                        disabled={uploading}
+                                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+                                                    >
+                                                        {uploading ? '...' : 'Add'}
+                                                    </button>
+                                                </div>
+                                                {inputs.awardImage && (
+                                                    <div className="text-xs text-indigo-600 flex items-center">
+                                                        <Check className="w-3 h-3 mr-1" /> Image selected: {inputs.awardImage.name}
+                                                        <button
+                                                            onClick={() => setInputs({ ...inputs, awardImage: null })}
+                                                            className="ml-2 text-gray-400 hover:text-red-500"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -630,7 +764,16 @@ const ProfilePage = () => {
                                             {profile.awards.length > 0 ? profile.awards.map((award, index) => (
                                                 <li key={index} className="flex items-start text-gray-600">
                                                     <span className="mr-2 mt-1.5 w-1.5 h-1.5 bg-yellow-400 rounded-full flex-shrink-0"></span>
-                                                    {award}
+                                                    {typeof award === 'object' ? (
+                                                        <div className="flex flex-col gap-1">
+                                                            <span>{award.title}</span>
+                                                            {award.image && (
+                                                                <img src={award.image} alt={award.title} className="w-full max-w-[200px] h-32 object-cover rounded-lg border border-gray-100 mt-1" />
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <span>{award}</span>
+                                                    )}
                                                 </li>
                                             )) : <span className="text-gray-500 text-sm">No awards added.</span>}
                                         </ul>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Users, MapPin, Code, Briefcase, MessageCircle, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { getOrCreateConversation, sendMessage } from '../../utils/messageService';
 
@@ -11,6 +13,23 @@ const TeamRecruitCard = ({ team, defaultOpenApply = false }) => {
     const [showApplyModal, setShowApplyModal] = useState(defaultOpenApply);
     const [selectedRole, setSelectedRole] = useState('');
     const [applyMessage, setApplyMessage] = useState('');
+    const [contestTitle, setContestTitle] = useState('');
+
+    React.useEffect(() => {
+        const fetchContest = async () => {
+            if (team.contestId) {
+                try {
+                    const contestDoc = await getDoc(doc(db, 'contests', team.contestId));
+                    if (contestDoc.exists()) {
+                        setContestTitle(contestDoc.data().title);
+                    }
+                } catch (error) {
+                    console.error("Error fetching contest:", error);
+                }
+            }
+        };
+        fetchContest();
+    }, [team.contestId]);
 
     const handleButtonClick = () => {
         if (!user) {
@@ -99,6 +118,19 @@ const TeamRecruitCard = ({ team, defaultOpenApply = false }) => {
                 </div>
 
                 <div className="space-y-3 mb-4">
+                    {/* Target Contest */}
+                    {contestTitle && (
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <Briefcase className="w-4 h-4 text-gray-500" />
+                                <span className="text-sm font-medium text-gray-700">목표 공모전</span>
+                            </div>
+                            <div className="px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium">
+                                {contestTitle}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Roles Needed */}
                     {team.rolesNeeded && team.rolesNeeded.length > 0 && (
                         <div>
