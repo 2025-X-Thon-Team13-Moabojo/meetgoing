@@ -77,7 +77,7 @@ export function findBestMatch(targetUser, allUsers) {
     const targetCats = getList(targetUser.category || targetUser.categories);
 
     const results = allUsers
-        .filter(user => user.id !== targetUser.id) // Exclude self
+        .filter(user => user.id !== (targetUser.id || targetUser.uid)) // Exclude self
         .map(user => {
             const score = calculateSuitability(targetUser, user);
             return {

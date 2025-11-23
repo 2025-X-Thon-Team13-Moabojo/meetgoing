@@ -91,12 +91,8 @@ const UserListPage = () => {
         if (selectedCategory) {
             matchesCategory = user.categories && user.categories.includes(selectedCategory);
         } else {
-            // Default: Show users in my category
-            if (currentUser && (currentUser.categories || currentUser.category)) {
-                const myCats = currentUser.categories || [currentUser.category];
-                const userCats = user.categories || [user.category];
-                matchesCategory = myCats.some(c => userCats.includes(c));
-            }
+            // Default: Show all users if no category is selected
+            matchesCategory = true;
         }
 
         const matchesTech = selectedTech ?
