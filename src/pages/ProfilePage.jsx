@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, MapPin, Briefcase, Code, Clock, Save, X, GraduationCap, Award, Trash2 } from 'lucide-react';
+import { User, MapPin, Briefcase, Code, Clock, Save, X, GraduationCap, Award, Trash2, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { jobCategories } from '../data/jobCategories';
 import { REGIONS } from '../utils/domainData';
@@ -36,7 +36,8 @@ const ProfilePage = () => {
         major: '',
         awards: [],
         themeColor: 'from-indigo-500 to-purple-600', // Default theme
-        avatar: ''
+        avatar: '',
+        reputation: 50 // Default reputation
     });
 
     const [uploading, setUploading] = useState(false);
@@ -68,7 +69,8 @@ const ProfilePage = () => {
                         major: currentUser.major || '',
                         awards: currentUser.awards || [],
                         themeColor: currentUser.themeColor || 'from-indigo-500 to-purple-600',
-                        avatar: currentUser.avatar || ''
+                        avatar: currentUser.avatar || '',
+                        reputation: currentUser.reputation || 50
                     });
                 }
             } else {
@@ -92,7 +94,8 @@ const ProfilePage = () => {
                             major: userData.major || '',
                             awards: userData.awards || [],
                             themeColor: userData.themeColor || 'from-indigo-500 to-purple-600',
-                            avatar: userData.avatar || ''
+                            avatar: userData.avatar || '',
+                            reputation: userData.reputation || 50
                         });
                     } else {
                         console.log("No such user!");
@@ -131,7 +134,8 @@ const ProfilePage = () => {
                 major: user.major || '',
                 awards: user.awards || [],
                 themeColor: user.themeColor || 'from-indigo-500 to-purple-600',
-                avatar: user.avatar || ''
+                avatar: user.avatar || '',
+                reputation: user.reputation || 50
             });
         }
         setIsEditing(false);
@@ -234,6 +238,12 @@ const ProfilePage = () => {
         { name: 'Amber Orange', value: 'from-amber-500 to-orange-500' },
         { name: 'Slate Gray', value: 'from-slate-700 to-slate-900' },
     ];
+
+    const getReputationColor = (score) => {
+        if (score >= 80) return 'bg-green-500';
+        if (score >= 40) return 'bg-yellow-500';
+        return 'bg-red-500';
+    };
 
     const handleAddAchievement = async () => {
         if (!inputs.awards.trim()) return;
@@ -781,6 +791,35 @@ const ProfilePage = () => {
                                 </div>
 
                                 <div className="space-y-6">
+                                    {/* Reputation Bar */}
+                                    <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                                        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4 flex items-center">
+                                            <Zap className="w-4 h-4 mr-2 text-yellow-500" /> Reputation
+                                        </h3>
+                                        <div className="relative pt-1">
+                                            <div className="flex mb-2 items-center justify-between">
+                                                <div>
+                                                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-gray-600 bg-gray-200">
+                                                        Energy
+                                                    </span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-xs font-semibold inline-block text-gray-600">
+                                                        {profile.reputation}%
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                                                <div style={{ width: `${Math.min(100, Math.max(0, profile.reputation))}%` }} className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${getReputationColor(profile.reputation)} transition-all duration-500`}></div>
+                                            </div>
+                                            <p className="text-xs text-gray-500 text-center">
+                                                {profile.reputation >= 80 ? '신뢰할 수 있는 팀원입니다!' :
+                                                    profile.reputation >= 40 ? '성장하고 있는 팀원입니다.' :
+                                                        '주의가 필요한 상태입니다.'}
+                                            </p>
+                                        </div>
+                                    </div>
+
                                     <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                                         <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Details</h3>
                                         <div className="space-y-4">

@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Check, UserPlus, LogOut, Search, X } from 'lucide-react';
+import { Send, Check, UserPlus, LogOut, Search, X, Calendar } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
 import { sendMessage, subscribeToMessages, acceptApplication, leaveConversation, searchUsers, getOrCreateConversation } from '../../utils/messageService';
 import { useNavigate } from 'react-router-dom';
+import ReviewModal from './ReviewModal';
 
 const ConversationView = ({ conversation }) => {
     const { user } = useAuth();
@@ -12,10 +15,12 @@ const ConversationView = ({ conversation }) => {
     const [sending, setSending] = useState(false);
     const [acceptingId, setAcceptingId] = useState(null);
     const [showInviteModal, setShowInviteModal] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [searching, setSearching] = useState(false);
     const [showMemberList, setShowMemberList] = useState(false);
+    const [contestEndDate, setContestEndDate] = useState(null);
     const messagesEndRef = useRef(null);
 
     // Get the other participant's ID (for 1:1 chats)
@@ -32,7 +37,34 @@ const ConversationView = ({ conversation }) => {
         });
 
         return () => unsubscribe();
+        return () => unsubscribe();
     }, [conversation.id]);
+
+    // Fetch contest deadline if it's a team chat
+    useEffect(() => {
+        const fetchContestInfo = async () => {
+            if (conversation.isGroup && conversation.teamId) {
+                try {
+                    // First get the team to find the contestId
+                    const teamDoc = await getDoc(doc(db, 'teams', conversation.teamId));
+                    if (teamDoc.exists()) {
+                        const teamData = teamDoc.data();
+                        if (teamData.contestId) {
+                            const contestDoc = await getDoc(doc(db, 'contests', teamData.contestId));
+                            if (contestDoc.exists()) {
+                                const contestData = contestDoc.data();
+                                // Assuming contestData.endDate is a string or timestamp
+                                setContestEndDate(contestData.endDate);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error fetching contest info:", error);
+                }
+            }
+        };
+        fetchContestInfo();
+    }, [conversation.isGroup, conversation.teamId]);
 
     // Scroll to bottom when messages update
     useEffect(() => {
@@ -207,9 +239,17 @@ const ConversationView = ({ conversation }) => {
                         <h3 className="font-semibold text-gray-900">
                             {conversation.isGroup ? conversation.name : otherParticipant.name}
                         </h3>
-                        <p className="text-xs text-gray-500">
-                            {conversation.isGroup ? `${conversation.participants.length}명 참여 중` : '온라인'}
-                        </p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-xs text-gray-500">
+                                {conversation.isGroup ? `${conversation.participants.length}명 참여 중` : '온라인'}
+                            </p>
+                            {conversation.isGroup && conversation.participants.length >= 3 && contestEndDate && (
+                                <span className="flex items-center text-xs font-medium text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
+                                    <Calendar className="w-3 h-3 mr-1" />
+                                    마감: {contestEndDate}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -217,6 +257,16 @@ const ConversationView = ({ conversation }) => {
                 <div className="flex items-center gap-2">
                     {conversation.isGroup && (
                         <>
+                            {/* Review Button - Show if deadline passed (simulated logic for now or real date check) */}
+                            {contestEndDate && new Date() > new Date(contestEndDate) && (
+                                <button
+                                    onClick={() => setShowReviewModal(true)}
+                                    className="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-200 transition-colors"
+                                >
+                                    팀원 평가
+                                </button>
+                            )}
+
                             <button
                                 onClick={() => setShowInviteModal(true)}
                                 className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
@@ -472,6 +522,21 @@ const ConversationView = ({ conversation }) => {
                     </div>
                 </div>
             )}
+            {/* Review Modal */}
+            <ReviewModal
+                isOpen={showReviewModal}
+                onClose={() => setShowReviewModal(false)}
+                teamMembers={conversation.participants.map(uid => ({
+                    uid,
+                    name: conversation.participantDetails?.[uid]?.name || 'Unknown',
+                    email: conversation.participantDetails?.[uid]?.email || ''
+                }))}
+                currentUser={user}
+                onSubmit={() => {
+                    // Optionally mark as reviewed in local state or Firestore
+                    console.log("Reviews submitted");
+                }}
+            />
         </div>
     );
 };

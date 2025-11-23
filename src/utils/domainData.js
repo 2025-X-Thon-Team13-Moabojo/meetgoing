@@ -51,3 +51,21 @@ export const REGIONS = [
     { value: 'Gyeongbuk', label: '경상북도' },
     { value: 'Jeju', label: '제주도' }
 ];
+
+export const EVALUATION_CRITERIA = {
+    POSITIVE: [
+        { id: 'skill_good', label: '실력이 좋아요', score: 2 },
+        { id: 'manner_good', label: '매너가 좋아요', score: 2 },
+        { id: 'punctual', label: '약속을 잘 지켜요', score: 2 },
+        { id: 'communication_good', label: '소통이 원활해요', score: 2 },
+        { id: 'passionate', label: '열정적이에요', score: 2 }
+    ],
+    NEGATIVE: [
+        { id: 'skill_bad', label: '실력이 부족해요', score: -2 },
+        { id: 'manner_bad', label: '매너가 부족해요', score: -2 },
+        { id: 'late', label: '약속을 어겨요', score: -2 },
+        { id: 'communication_bad', label: '소통이 어려워요', score: -2 },
+        { id: 'passive', label: '참여가 저조해요', score: -2 }
+    ],
+    RUNAWAY: { id: 'runaway', label: '중도 탈주', score: -2, title: '중도 탈주' }
+};
