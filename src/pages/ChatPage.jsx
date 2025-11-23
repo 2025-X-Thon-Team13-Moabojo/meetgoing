@@ -98,7 +98,7 @@ const ChatPage = () => {
                                             </div>
                                         ) : (
                                             <img
-                                                src={avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`}
+                                                src={avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(name)}`}
                                                 alt={name}
                                                 className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                                             />

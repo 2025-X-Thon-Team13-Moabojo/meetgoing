@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
                 uid: firebaseUser.uid,
                 email,
                 name,
-                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150',
+                avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(name)}`,
                 roles: [],
                 categories: [],
                 subCategories: [],

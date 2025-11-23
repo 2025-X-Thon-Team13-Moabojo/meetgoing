@@ -76,7 +76,7 @@ const TeamStatusModal = ({ isOpen, onClose, team }) => {
                                     {members.map((member) => (
                                         <div key={member.id} className="flex items-start p-3 bg-gray-50 rounded-lg">
                                             <img
-                                                src={member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || 'User')}&background=random`}
+                                                src={member.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(member.name || 'User')}`}
                                                 alt={member.name}
                                                 className="w-10 h-10 rounded-full object-cover border border-gray-200"
                                             />

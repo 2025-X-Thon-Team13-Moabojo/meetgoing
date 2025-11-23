@@ -230,7 +230,7 @@ const ConversationView = ({ conversation }) => {
                         </div>
                     ) : (
                         <img
-                            src={otherParticipant.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherParticipant.name)}&background=random`}
+                            src={otherParticipant.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(otherParticipant.name)}`}
                             alt={otherParticipant.name}
                             className="w-10 h-10 rounded-full"
                         />
@@ -503,7 +503,7 @@ const ConversationView = ({ conversation }) => {
                                     >
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src={details.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(details.name)}&background=random`}
+                                                src={details.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(details.name)}`}
                                                 alt={details.name}
                                                 className="w-10 h-10 rounded-full object-cover"
                                             />

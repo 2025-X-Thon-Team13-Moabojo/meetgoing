@@ -64,7 +64,7 @@ const UserCard = ({ user }) => {
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
                         <img
-                            src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random`}
+                            src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(user.name || 'User')}`}
                             alt={user.name}
                             className="w-16 h-16 rounded-full object-cover border-2 border-gray-100"
                         />

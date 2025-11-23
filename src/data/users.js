@@ -7,7 +7,7 @@ export const users = [
         subCategory: "Web Development",
         techStack: ["React", "TypeScript", "Tailwind CSS"],
         bio: "Passionate about building beautiful UIs and great UX.",
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Kim Min-su")}`,
         region: "Seoul",
         availableTime: "Weekends"
     },
@@ -19,7 +19,7 @@ export const users = [
         subCategory: "Server Backend",
         techStack: ["Node.js", "Express", "MongoDB", "Python"],
         bio: "Scalable systems enthusiast. Love solving complex problems.",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Lee Ji-won")}`,
         region: "Busan",
         availableTime: "Evenings"
     },
@@ -31,7 +31,7 @@ export const users = [
         subCategory: "UX/UI Design",
         techStack: ["Figma", "Adobe XD", "Sketch"],
         bio: "Designing intuitive and accessible experiences for everyone.",
-        avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=150",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Park Seo-joon")}`,
         region: "Seoul",
         availableTime: "Weekdays"
     },
@@ -43,7 +43,7 @@ export const users = [
         subCategory: "Service Planning",
         techStack: ["Jira", "Notion", "Slack"],
         bio: "Turning chaotic ideas into structured product roadmaps.",
-        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Choi Soo-young")}`,
         region: "Incheon",
         availableTime: "Flexible"
     },
@@ -55,7 +55,7 @@ export const users = [
         subCategory: "Web Development",
         techStack: ["Next.js", "Supabase", "Flutter"],
         bio: "Building cross-platform applications with modern stacks.",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Jung Woo-sung")}`,
         region: "Gyeonggi",
         availableTime: "Weekends"
     },
@@ -68,7 +68,7 @@ export const users = [
         subCategory: "Web Development",
         techStack: ["Vue", "JavaScript", "CSS"],
         bio: "Loves creating interactive web experiences.",
-        avatar: "https://i.pravatar.cc/150?img=6",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Han Ji-eun")}`,
         region: "Busan",
         availableTime: "Evenings"
     },
@@ -80,7 +80,7 @@ export const users = [
         subCategory: "Server Backend",
         techStack: ["Go", "PostgreSQL", "Docker"],
         bio: "Building reliable APIs at scale.",
-        avatar: "https://i.pravatar.cc/150?img=7",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Kim Soo-hyun")}`,
         region: "Seoul",
         availableTime: "Weekdays"
     },
@@ -92,7 +92,7 @@ export const users = [
         subCategory: "Machine Learning",
         techStack: ["Python", "TensorFlow", "Pandas"],
         bio: "Turning data into insights.",
-        avatar: "https://i.pravatar.cc/150?img=8",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Lee Hyun-woo")}`,
         region: "Daegu",
         availableTime: "Weekends"
     },
@@ -104,7 +104,7 @@ export const users = [
         subCategory: "UX/UI Design",
         techStack: ["Figma", "Sketch"],
         bio: "Designing user-friendly interfaces.",
-        avatar: "https://i.pravatar.cc/150?img=9",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Park Min-ji")}`,
         region: "Incheon",
         availableTime: "Flexible"
     },
@@ -116,7 +116,7 @@ export const users = [
         subCategory: "Product Strategy",
         techStack: ["Jira", "Confluence"],
         bio: "Bridging tech and business.",
-        avatar: "https://i.pravatar.cc/150?img=10",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Choi Jae-won")}`,
         region: "Gyeonggi",
         availableTime: "Weekdays"
     },
@@ -128,7 +128,7 @@ export const users = [
         subCategory: "Mobile Development",
         techStack: ["React Native", "Expo"],
         bio: "Creating cross‑platform mobile apps.",
-        avatar: "https://i.pravatar.cc/150?img=11",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Seo Yeon-woo")}`,
         region: "Busan",
         availableTime: "Evenings"
     },
@@ -140,7 +140,7 @@ export const users = [
         subCategory: "CI/CD",
         techStack: ["GitHub Actions", "Kubernetes", "AWS"],
         bio: "Automating deployments and infrastructure.",
-        avatar: "https://i.pravatar.cc/150?img=12",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Jung Hye-jin")}`,
         region: "Seoul",
         availableTime: "Weekends"
     },
@@ -152,7 +152,7 @@ export const users = [
         subCategory: "Full Stack",
         techStack: ["Next.js", "Node.js", "PostgreSQL"],
         bio: "Enjoys end‑to‑end development.",
-        avatar: "https://i.pravatar.cc/150?img=13",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Kang Min-seok")}`,
         region: "Gwangju",
         availableTime: "Weekdays"
     },
@@ -164,7 +164,7 @@ export const users = [
         subCategory: "Data Analysis",
         techStack: ["SQL", "Tableau"],
         bio: "Visualizing data for decisions.",
-        avatar: "https://i.pravatar.cc/150?img=14",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Yoon Ji-hyun")}`,
         region: "Daejeon",
         availableTime: "Flexible"
     },
@@ -176,7 +176,7 @@ export const users = [
         subCategory: "Game Development",
         techStack: ["Unity", "C#"],
         bio: "Passionate about interactive experiences.",
-        avatar: "https://i.pravatar.cc/150?img=15",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Lim Soo-yeon")}`,
         region: "Ulsan",
         availableTime: "Evenings"
     },
@@ -188,7 +188,7 @@ export const users = [
         subCategory: "Cybersecurity",
         techStack: ["Python", "Kali Linux"],
         bio: "Securing applications and infrastructure.",
-        avatar: "https://i.pravatar.cc/150?img=16",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Oh Joon-hee")}`,
         region: "Gangwon",
         availableTime: "Weekends"
     },
@@ -200,7 +200,7 @@ export const users = [
         subCategory: "Content Creation",
         techStack: ["WordPress", "SEO"],
         bio: "Crafting compelling narratives.",
-        avatar: "https://i.pravatar.cc/150?img=17",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Shin Hye-jin")}`,
         region: "Jeonnam",
         availableTime: "Weekdays"
     },
@@ -212,7 +212,7 @@ export const users = [
         subCategory: "Artificial Intelligence",
         techStack: ["Python", "PyTorch", "Docker"],
         bio: "Building intelligent systems.",
-        avatar: "https://i.pravatar.cc/150?img=18",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Kwon Tae-hyun")}`,
         region: "Jeonbuk",
         availableTime: "Flexible"
     },
@@ -224,7 +224,7 @@ export const users = [
         subCategory: "Cloud Infrastructure",
         techStack: ["AWS", "Terraform"],
         bio: "Designing scalable cloud solutions.",
-        avatar: "https://i.pravatar.cc/150?img=19",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Moon Seung-woo")}`,
         region: "Gyeongnam",
         availableTime: "Evenings"
     },
@@ -236,7 +236,7 @@ export const users = [
         subCategory: "Testing",
         techStack: ["Cypress", "Jest"],
         bio: "Ensuring product quality.",
-        avatar: "https://i.pravatar.cc/150?img=20",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Lee Ji-hyun")}`,
         region: "Gyeongbuk",
         availableTime: "Weekends"
     },
@@ -248,7 +248,7 @@ export const users = [
         subCategory: "Analysis",
         techStack: ["Excel", "PowerBI"],
         bio: "Connecting business needs with tech.",
-        avatar: "https://i.pravatar.cc/150?img=21",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Park Soo-min")}`,
         region: "Jeju",
         availableTime: "Flexible"
     },
@@ -260,7 +260,7 @@ export const users = [
         subCategory: "Embedded Systems",
         techStack: ["C", "Arduino"],
         bio: "Working on hardware‑software integration.",
-        avatar: "https://i.pravatar.cc/150?img=22",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Chung Min-kyu")}`,
         region: "Seoul",
         availableTime: "Evenings"
     },
@@ -272,7 +272,7 @@ export const users = [
         subCategory: "Social Media",
         techStack: ["Hootsuite", "Canva"],
         bio: "Engaging audiences across platforms.",
-        avatar: "https://i.pravatar.cc/150?img=23",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Yoo Ha-neul")}`,
         region: "Busan",
         availableTime: "Weekdays"
     },
@@ -284,7 +284,7 @@ export const users = [
         subCategory: "R&D",
         techStack: ["MATLAB", "Simulink"],
         bio: "Innovating new technologies.",
-        avatar: "https://i.pravatar.cc/150?img=24",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Jang Eun-woo")}`,
         region: "Incheon",
         availableTime: "Flexible"
     },
@@ -296,7 +296,7 @@ export const users = [
         subCategory: "Writing",
         techStack: ["Markdown", "Git"],
         bio: "Creating clear technical documentation.",
-        avatar: "https://i.pravatar.cc/150?img=25",
+        avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent("Han Soo-bin")}`,
         region: "Gyeonggi",
         availableTime: "Weekends"
     }

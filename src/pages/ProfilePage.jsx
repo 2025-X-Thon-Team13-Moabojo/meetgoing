@@ -300,21 +300,39 @@ const ProfilePage = () => {
                             <div className="flex items-end">
                                 <div className="relative group">
                                     <img
-                                        src={profile.avatar || viewUser.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150"}
+                                        src={profile.avatar || viewUser.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(profile.name || viewUser.name || 'User')}`}
                                         alt="Profile"
                                         className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg object-cover bg-white"
                                     />
                                     {isEditing && (
-                                        <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-2xl cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Camera className="w-8 h-8 text-white" />
-                                            <input
-                                                type="file"
-                                                className="hidden"
-                                                accept="image/*"
-                                                onChange={handleAvatarChange}
-                                                disabled={uploading}
-                                            />
-                                        </label>
+                                        <>
+                                            <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-2xl cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                <Camera className="w-8 h-8 text-white" />
+                                                <input
+                                                    type="file"
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    onChange={handleAvatarChange}
+                                                    disabled={uploading}
+                                                />
+                                            </label>
+                                            {profile.avatar && (
+                                                <button
+                                                    onClick={async (e) => {
+                                                        e.stopPropagation();
+                                                        if (confirm('프로필 사진을 삭제하시겠습니까?')) {
+                                                            setProfile(prev => ({ ...prev, avatar: '' }));
+                                                            setViewUser(prev => ({ ...prev, avatar: '' }));
+                                                            await updateProfile({ avatar: '' });
+                                                        }
+                                                    }}
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full shadow-md z-20 hover:bg-red-600 transition-colors"
+                                                    title="사진 삭제"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                                 <div className="ml-6 mb-2">
