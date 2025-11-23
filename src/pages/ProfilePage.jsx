@@ -112,9 +112,14 @@ const ProfilePage = () => {
         }
     }, [userId, currentUser, authLoading, isOwnProfile]);
 
-    const handleSave = () => {
-        updateProfile(profile);
-        setIsEditing(false);
+    const handleSave = async () => {
+        try {
+            await updateProfile(profile);
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Failed to save profile:", error);
+            alert("Failed to save changes. Please try again.");
+        }
     };
 
     const handleCancel = () => {

@@ -5,6 +5,7 @@ import UserCard from '../components/features/UserCard';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { jobCategories } from '../data/jobCategories';
+import { users as dummyUsers } from '../data/users';
 import { useAuth } from '../context/AuthContext';
 
 const UserListPage = () => {
@@ -36,11 +37,15 @@ const UserListPage = () => {
                     ...doc.data()
                 }));
 
+                // Combine Firestore users and dummy users
+                // Ensure no duplicates by ID (handle string vs number IDs)
+                const combinedUsers = [...usersData, ...dummyUsers.filter(d => !usersData.some(u => String(u.id) === String(d.id)))];
+
                 // If current user is logged in and has profile data, use matching system
                 if (currentUser && (currentUser.category || currentUser.categories)) {
                     const { findBestMatch } = await import('../utils/matchingSystem');
                     // Get all matches sorted by score
-                    const allMatches = findBestMatch(currentUser, usersData);
+                    const allMatches = findBestMatch(currentUser, combinedUsers);
 
                     // Set main list (can be same as allMatches or just raw data, but let's keep it sorted)
                     setUsers(allMatches);
@@ -51,13 +56,13 @@ const UserListPage = () => {
                         .slice(0, 4);
                     setRecommendedUsers(recommendations);
                 } else {
-                    // Default sort by createdAt
-                    usersData.sort((a, b) => {
+                    // Default sort by createdAt (mock users might not have it, so handle gracefully)
+                    combinedUsers.sort((a, b) => {
                         const aTime = a.createdAt?.seconds || 0;
                         const bTime = b.createdAt?.seconds || 0;
                         return bTime - aTime;
                     });
-                    setUsers(usersData);
+                    setUsers(combinedUsers);
                 }
             } catch (error) {
                 console.error('Error fetching users:', error);
@@ -72,7 +77,7 @@ const UserListPage = () => {
 
     // Extract all unique tech stacks for filter
     const allTechStacks = Array.from(
-        new Set(users.flatMap(user => user.techStack || []))
+        new Set((users || []).flatMap(user => user.techStack || []))
     ).sort();
 
     const filteredUsers = users.filter(user => {
